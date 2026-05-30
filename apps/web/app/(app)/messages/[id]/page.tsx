@@ -32,6 +32,7 @@ interface Message {
 interface ConversationData {
   conversation: {
     id: string;
+    matchId?: string;
     participants: Array<{
       id: string;
       fullName: string;
