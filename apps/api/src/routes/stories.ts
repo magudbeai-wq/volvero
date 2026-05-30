@@ -73,7 +73,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
 // ── POST /api/stories/:id/view ────────────────────────────────
 router.post('/:id/view', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const story = await prisma.story.findUnique({ where: { id: req.params.id } });
+    const story = await prisma.story.findUnique({ where: { id: req.params.id as string } });
     if (!story) return res.status(404).json({ error: 'Story not found' });
 
     if (!story.viewers.includes(req.userId!)) {
@@ -96,7 +96,7 @@ router.post('/:id/view', requireAuth, async (req: AuthRequest, res) => {
 router.delete('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const story = await prisma.story.findFirst({
-      where: { id: req.params.id, userId: req.userId },
+      where: { id: req.params.id as string, userId: req.userId },
     });
 
     if (!story) return res.status(404).json({ error: 'Story not found' });

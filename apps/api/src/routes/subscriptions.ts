@@ -15,7 +15,7 @@ function getStripe(): Stripe {
     if (!key || key.startsWith('sk_test_YOUR')) {
       throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY in your .env file.');
     }
-    _stripe = new Stripe(key, { apiVersion: '2024-11-20.acacia' });
+    _stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' as any });
   }
   return _stripe;
 }

@@ -13,7 +13,7 @@ router.get('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
     // Verify user is part of conversation and load participants
     const conversation = await prisma.conversation.findFirst({
       where: {
-        id: conversationId,
+        id: conversationId as string,
         OR: [{ userAId: req.userId }, { userBId: req.userId }],
       },
       include: {
@@ -30,7 +30,7 @@ router.get('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
 
     const messages = await prisma.message.findMany({
       where: {
-        conversationId,
+        conversationId: conversationId as string,
         isDeleted: false,
         ...(before ? { createdAt: { lt: new Date(before as string) } } : {}),
       },
@@ -49,7 +49,7 @@ router.get('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
     // Mark messages as read
     await prisma.message.updateMany({
       where: {
-        conversationId,
+        conversationId: conversationId as string,
         senderId: { not: req.userId },
         isRead: false,
       },
@@ -79,7 +79,7 @@ router.post('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
 
     const conversation = await prisma.conversation.findFirst({
       where: {
-        id: conversationId,
+        id: conversationId as string,
         OR: [{ userAId: req.userId }, { userBId: req.userId }],
       },
     });
@@ -88,7 +88,7 @@ router.post('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
 
     const message = await prisma.message.create({
       data: {
-        conversationId,
+        conversationId: conversationId as string,
         senderId: req.userId!,
         content,
         type,
@@ -107,7 +107,7 @@ router.post('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
 
     // Update conversation last message
     await prisma.conversation.update({
-      where: { id: conversationId },
+      where: { id: conversationId as string },
       data: {
         lastMessage: type === 'TEXT' ? content : `📎 ${type.toLowerCase()}`,
         lastMsgAt: new Date(),
@@ -124,7 +124,7 @@ router.post('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
 router.delete('/:messageId', requireAuth, async (req: AuthRequest, res) => {
   try {
     const message = await prisma.message.findFirst({
-      where: { id: req.params.messageId, senderId: req.userId },
+      where: { id: req.params.messageId as string, senderId: req.userId },
     });
 
     if (!message) return res.status(404).json({ error: 'Message not found' });
@@ -145,7 +145,7 @@ router.patch('/:messageId/react', requireAuth, async (req: AuthRequest, res) => 
   try {
     const { emoji } = req.body;
     const message = await prisma.message.findUnique({
-      where: { id: req.params.messageId },
+      where: { id: req.params.messageId as string },
     });
 
     if (!message) return res.status(404).json({ error: 'Message not found' });

@@ -38,7 +38,7 @@ router.put('/read-all', requireAuth, async (req: AuthRequest, res) => {
 
     await prisma.notification.updateMany({
       where: { userId: user.id, isRead: false },
-      data: { isRead: true, readAt: new Date() },
+      data: { isRead: true },
     });
 
     res.json({ message: 'All notifications marked as read' });
@@ -51,8 +51,8 @@ router.put('/read-all', requireAuth, async (req: AuthRequest, res) => {
 router.put('/:id/read', requireAuth, async (req: AuthRequest, res) => {
   try {
     const notification = await prisma.notification.update({
-      where: { id: req.params.id },
-      data: { isRead: true, readAt: new Date() },
+      where: { id: req.params.id as string },
+      data: { isRead: true },
     });
 
     res.json({ notification });
@@ -73,11 +73,13 @@ export async function createNotification(params: {
   return prisma.notification.create({
     data: {
       userId: params.userId,
-      type: params.type,
+      type: params.type as any,
       title: params.title,
-      body: params.body,
-      link: params.link,
-      imageUrl: params.imageUrl,
+      message: params.body,
+      data: {
+        ...(params.link ? { link: params.link } : {}),
+        ...(params.imageUrl ? { imageUrl: params.imageUrl } : {}),
+      },
     },
   });
 }

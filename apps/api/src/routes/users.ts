@@ -117,7 +117,7 @@ router.patch('/me', requireAuth, async (req: AuthRequest, res) => {
 // ── GET /api/users/:id ────────────────────────────────────────
 router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Check if blocked
     const block = await prisma.block.findFirst({

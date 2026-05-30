@@ -97,6 +97,8 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
         relationshipGoal: true,
         matchCount: true,
         subscriptionTier: true,
+        maritalStatus: true,
+        profileCompletion: true,
       },
       skip: page * limit,
       take: limit * 3,
@@ -315,7 +317,7 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const match = await prisma.match.findFirst({
       where: {
-        id: req.params.id,
+        id: req.params.id as string,
         OR: [{ userAId: req.userId }, { userBId: req.userId }],
       },
     });

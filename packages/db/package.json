@@ -9,7 +9,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "ts-node src/seed.ts",
-    "build": "tsc"
+    "build": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"

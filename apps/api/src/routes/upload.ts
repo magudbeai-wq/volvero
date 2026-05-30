@@ -76,7 +76,7 @@ router.post('/chat/:conversationId', requireAuth, upload.single('media'), async 
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
     const base64 = bufferToBase64(req.file.buffer, req.file.mimetype);
-    const result = await uploadChatMedia(base64, req.params.conversationId);
+    const result = await uploadChatMedia(base64, req.params.conversationId as string);
 
     res.json({ url: result.url, publicId: result.publicId });
   } catch (error) {
