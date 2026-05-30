@@ -78,6 +78,14 @@ app.get('/health', (_req, res) => {
   });
 });
 
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Welcome to the LAMAANE DOORE API!',
+    docs: 'Endpoints are mounted at /api'
+  });
+});
+
 // ── API Routes ───────────────────────────────────────────────
 app.use('/api/users', usersRouter);
 app.use('/api/matches', matchesRouter);
