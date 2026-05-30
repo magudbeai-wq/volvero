@@ -1,0 +1,533 @@
+// This is your Prisma schema file for LAMAANE DOORE
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+  PREFER_NOT_TO_SAY
+}
+
+enum Religion {
+  ISLAM
+  CHRISTIANITY
+  SECULAR
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum EducationLevel {
+  HIGH_SCHOOL
+  SOME_COLLEGE
+  BACHELORS
+  MASTERS
+  PHD
+  VOCATIONAL
+  OTHER
+}
+
+enum RelationshipGoal {
+  MARRIAGE
+  LONG_TERM
+  SHORT_TERM
+  FRIENDSHIP
+  NOT_SURE
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  GOLD
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+enum SwipeDirection {
+  LEFT
+  RIGHT
+  SUPER
+}
+
+enum MatchStatus {
+  PENDING
+  MATCHED
+  UNMATCHED
+  BLOCKED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VOICE
+  GIF
+  STICKER
+  SYSTEM
+}
+
+enum ReportReason {
+  FAKE_PROFILE
+  INAPPROPRIATE_CONTENT
+  HARASSMENT
+  SPAM
+  UNDERAGE
+  SCAM
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  MATCH
+  MESSAGE
+  LIKE
+  SUPER_LIKE
+  PROFILE_VISIT
+  SUBSCRIPTION
+  SYSTEM
+  STORY
+  ACHIEVEMENT
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+}
+
+// ============================================================
+// USER MODEL
+// ============================================================
+
+model User {
+  id                String             @id @default(cuid())
+  clerkId           String             @unique
+  email             String             @unique
+  phone             String?            @unique
+  
+  // Profile Info
+  fullName          String
+  nickname          String?
+  dateOfBirth       DateTime?
+  gender            Gender?
+  bio               String?            @db.Text
+  
+  // Location
+  city              String?
+  country           String?
+  latitude          Float?
+  longitude         Float?
+  locationUpdatedAt DateTime?
+  
+  // Cultural Identity
+  tribe             String?
+  religion          Religion?
+  
+  // Personal Details
+  maritalStatus     MaritalStatus?
+  educationLevel    EducationLevel?
+  career            String?
+  company           String?
+  height            Int?               // in cm
+  
+  // Preferences & Goals
+  relationshipGoal  RelationshipGoal?
+  languages         String[]           @default([])
+  interests         String[]           @default([])
+  personalityTraits String[]           @default([])
+  lifestylePrefs    String[]           @default([])
+  
+  // Media
+  profilePhoto      String?
+  photos            String[]           @default([])
+  voiceIntroUrl     String?
+  introVideoUrl     String?
+  
+  // Verification
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  selfieVerifyUrl    String?
+  isVerified         Boolean           @default(false)
+  
+  // Account
+  subscriptionTier  SubscriptionTier   @default(FREE)
+  isProfileComplete Boolean            @default(false)
+  profileCompletion Int                @default(0)
+  isOnline          Boolean            @default(false)
+  lastSeenAt        DateTime?
+  status            UserStatus         @default(ACTIVE)
+  
+  // Settings
+  showDistance      Boolean            @default(true)
+  showAge           Boolean            @default(true)
+  isIncognito       Boolean            @default(false)
+  maxDistance       Int                @default(50)
+  minAgePreference  Int                @default(18)
+  maxAgePreference  Int                @default(60)
+  
+  // Gamification
+  achievementBadges String[]           @default([])
+  dailyStreak       Int                @default(0)
+  lastActiveDate    DateTime?
+  referralCode      String?            @unique
+  referredBy        String?
+  totalReferrals    Int                @default(0)
+  
+  // Stats
+  likesGiven        Int                @default(0)
+  likesReceived     Int                @default(0)
+  matchCount        Int                @default(0)
+  
+  // Timestamps
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  swipesGiven       Swipe[]            @relation("SwipeGiver")
+  swipesReceived    Swipe[]            @relation("SwipeReceiver")
+  matchesA          Match[]            @relation("MatchUserA")
+  matchesB          Match[]            @relation("MatchUserB")
+  sentMessages      Message[]          @relation("MessageSender")
+  conversationsA    Conversation[]     @relation("ConversationUserA")
+  conversationsB    Conversation[]     @relation("ConversationUserB")
+  subscription      Subscription?
+  reportsGiven      Report[]           @relation("ReportReporter")
+  reportsReceived   Report[]           @relation("ReportReported")
+  blocksGiven       Block[]            @relation("BlockBlocker")
+  blocksReceived    Block[]            @relation("BlockBlocked")
+  stories           Story[]
+  profileVisits     ProfileVisit[]     @relation("VisitedUser")
+  profileVisitsMade ProfileVisit[]     @relation("VisitorUser")
+  notifications     Notification[]
+  adminLogs         AdminLog[]
+  aiRecommendations AIRecommendation[] @relation("RecommendationUser")
+  aiTargeted        AIRecommendation[] @relation("RecommendationTarget")
+
+  @@index([clerkId])
+  @@index([email])
+  @@index([latitude, longitude])
+  @@index([subscriptionTier])
+  @@index([isOnline])
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// ============================================================
+// SWIPE + MATCH
+// ============================================================
+
+model Swipe {
+  id         String         @id @default(cuid())
+  giverId    String
+  receiverId String
+  direction  SwipeDirection
+  createdAt  DateTime       @default(now())
+
+  giver    User @relation("SwipeGiver", fields: [giverId], references: [id], onDelete: Cascade)
+  receiver User @relation("SwipeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([giverId, receiverId])
+  @@index([giverId])
+  @@index([receiverId])
+  @@index([direction])
+  @@map("swipes")
+}
+
+model Match {
+  id           String      @id @default(cuid())
+  userAId      String
+  userBId      String
+  status       MatchStatus @default(MATCHED)
+  compatibility Float?
+  isRead       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  userA        User          @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB        User          @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@index([status])
+  @@map("matches")
+}
+
+// ============================================================
+// MESSAGING
+// ============================================================
+
+model Conversation {
+  id          String    @id @default(cuid())
+  matchId     String    @unique
+  userAId     String
+  userBId     String
+  lastMessage String?
+  lastMsgAt   DateTime?
+  isEncrypted Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  match    Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userA    User      @relation("ConversationUserA", fields: [userAId], references: [id])
+  userB    User      @relation("ConversationUserB", fields: [userBId], references: [id])
+  messages Message[]
+
+  @@index([userAId])
+  @@index([userBId])
+  @@index([lastMsgAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  senderId       String
+  type           MessageType @default(TEXT)
+  content        String?     @db.Text
+  mediaUrl       String?
+  replyToId      String?
+  reactions      Json?       @default("{}")
+  isRead         Boolean     @default(false)
+  isDeleted      Boolean     @default(false)
+  editedAt       DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+  replyTo      Message?     @relation("MessageReply", fields: [replyToId], references: [id])
+  replies      Message[]    @relation("MessageReply")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ============================================================
+// SUBSCRIPTIONS
+// ============================================================
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  tier                 SubscriptionTier   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  trialStart           DateTime?
+  trialEnd             DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// ============================================================
+// SAFETY
+// ============================================================
+
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  reportedId   String
+  reason       ReportReason
+  description  String?      @db.Text
+  evidence     String[]     @default([])
+  status       ReportStatus @default(PENDING)
+  adminNotes   String?
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  reporter User @relation("ReportReporter", fields: [reporterId], references: [id])
+  reported User @relation("ReportReported", fields: [reportedId], references: [id])
+
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([status])
+  @@map("reports")
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  blocker User @relation("BlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// ============================================================
+// SOCIAL FEATURES
+// ============================================================
+
+model Story {
+  id          String   @id @default(cuid())
+  userId      String
+  mediaUrl    String
+  caption     String?
+  duration    Int      @default(5)
+  viewCount   Int      @default(0)
+  viewers     String[] @default([])
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("stories")
+}
+
+model ProfileVisit {
+  id        String   @id @default(cuid())
+  visitedId String
+  visitorId String
+  createdAt DateTime @default(now())
+
+  visited User @relation("VisitedUser", fields: [visitedId], references: [id], onDelete: Cascade)
+  visitor User @relation("VisitorUser", fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@index([visitedId])
+  @@index([visitorId])
+  @@index([createdAt])
+  @@map("profile_visits")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================
+// AI FEATURES
+// ============================================================
+
+model AIRecommendation {
+  id            String   @id @default(cuid())
+  userId        String
+  targetId      String
+  score         Float
+  factors       Json
+  isShown       Boolean  @default(false)
+  isActedOn     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+
+  user   User @relation("RecommendationUser", fields: [userId], references: [id], onDelete: Cascade)
+  target User @relation("RecommendationTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetId])
+  @@index([userId])
+  @@index([score])
+  @@map("ai_recommendations")
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  target    String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_logs")
+}
+
+model PlatformStat {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  dailyUsers  Int      @default(0)
+  newUsers    Int      @default(0)
+  totalSwipes Int      @default(0)
+  totalMatches Int     @default(0)
+  totalMessages Int    @default(0)
+  revenue     Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@map("platform_stats")
+}

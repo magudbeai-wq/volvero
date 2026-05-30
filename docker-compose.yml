@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lamaane_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: lamaane
+      POSTGRES_PASSWORD: lamaane_secret_2024
+      POSTGRES_DB: lamaane_doore
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: lamaane_redis
+    restart: always
+    command: redis-server --requirepass lamaane_redis_secret
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

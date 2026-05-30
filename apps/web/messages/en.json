@@ -1,0 +1,66 @@
+{
+  "app": {
+    "name": "LAMAANE DOORE",
+    "tagline": "Find Your Perfect Somali Match"
+  },
+  "nav": {
+    "discover": "Discover",
+    "matches": "Matches",
+    "messages": "Messages",
+    "profile": "Profile",
+    "premium": "Premium",
+    "settings": "Settings"
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI-Powered Somali Matchmaking Platform",
+      "title1": "Find Your",
+      "title2": "Perfect Somali",
+      "title3": "Match",
+      "subtitle": "LAMAANE DOORE combines AI-powered compatibility with deep Somali cultural values. Meet verified singles who share your faith, traditions, and life goals.",
+      "cta_primary": "Start for Free",
+      "cta_secondary": "See How It Works"
+    },
+    "stats": {
+      "users": "Registered Singles",
+      "matches": "Matches Made",
+      "marriages": "Marriages & Engagements",
+      "satisfaction": "Satisfaction Rate"
+    }
+  },
+  "auth": {
+    "sign_in": "Sign In",
+    "sign_up": "Create Account",
+    "sign_out": "Sign Out",
+    "welcome_back": "Welcome back"
+  },
+  "discover": {
+    "title": "Discover",
+    "no_more": "You've seen everyone!",
+    "refresh": "Refresh Matches",
+    "like_limit": "Daily like limit reached! Upgrade to Premium for unlimited likes."
+  },
+  "matches": {
+    "title": "Your Matches",
+    "empty": "No matches yet",
+    "first_message": "Send the first message!"
+  },
+  "chat": {
+    "start": "Start the Conversation",
+    "placeholder": "Type a message...",
+    "icebreaker": "Generate AI Icebreaker",
+    "typing": "typing..."
+  },
+  "profile": {
+    "title": "My Profile",
+    "edit": "Edit Profile",
+    "verify": "Get Verified",
+    "verify_desc": "Verified profiles get 3x more matches. Takes under 2 minutes.",
+    "completion": "Profile Strength"
+  },
+  "premium": {
+    "title": "Upgrade Your Experience",
+    "subtitle": "Premium members get 10x more matches and find their partner 3x faster.",
+    "guarantee": "7-day money-back guarantee · Cancel anytime · Secure payment via Stripe"
+  }
+}
