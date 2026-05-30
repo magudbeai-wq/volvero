@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const inter = Inter({
