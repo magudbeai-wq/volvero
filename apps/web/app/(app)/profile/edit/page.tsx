@@ -48,7 +48,6 @@ export default function EditProfilePage() {
       smokingStatus: p.smokingStatus || '',
       exerciseFrequency: p.exerciseFrequency || '',
       dietaryPrefs: p.dietaryPrefs || '',
-      dietaryPrefs: p.dietaryPrefs || '',
       photos: p.photos || [],
       profilePhoto: p.profilePhoto || '',
       voiceIntroUrl: p.voiceIntroUrl || '',
