@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 const STATS = [
-  { value: 50000, suffix: '+', label: 'Registered Singles', labelAr: 'عضو مسجل', emoji: '👥' },
-  { value: 12000, suffix: '+', label: 'Matches Made', labelAr: 'تطابق ناجح', emoji: '💜' },
-  { value: 850, suffix: '+', label: 'Marriages & Engagements', labelAr: 'زواج وخطوبة', emoji: '💍' },
-  { value: 98, suffix: '%', label: 'Satisfaction Rate', labelAr: 'معدل الرضا', emoji: '⭐' },
+  { value: 50000, suffix: '+', label: 'Registered Singles', emoji: '👥' },
+  { value: 12000, suffix: '+', label: 'Matches Made', emoji: '💜' },
+  { value: 850, suffix: '+', label: 'Marriages & Engagements', emoji: '💍' },
+  { value: 98, suffix: '%', label: 'Satisfaction Rate', emoji: '⭐' },
 ];
 
 function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
@@ -71,9 +71,7 @@ export default function StatsSection() {
               <div className="text-sm font-medium" style={{ color: '#9ca3af' }}>
                 {stat.label}
               </div>
-              <div className="text-xs mt-1" style={{ color: '#6b7280' }} dir="rtl">
-                {stat.labelAr}
-              </div>
+
             </motion.div>
           ))}
         </div>

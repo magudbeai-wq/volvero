@@ -55,6 +55,7 @@ export default function ChatWindow() {
   const [showSafetyMenu, setShowSafetyMenu] = useState(false);
   const [safetyStep, setSafetyStep] = useState<'menu' | 'report'>('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coachSuggestion, setCoachSuggestion] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -141,7 +142,7 @@ export default function ChatWindow() {
     onError: () => toast.error('Failed to send message'),
   });
 
-  // AI Icebreaker mutation
+  // Smart Icebreaker mutation
   const icebreakerMutation = useMutation({
     mutationFn: (targetUserId: string) =>
       api.post('/api/ai/icebreaker', { targetUserId }).then(r => r.data),
@@ -153,6 +154,22 @@ export default function ChatWindow() {
       }
     },
     onError: () => toast.error('Icebreaker generation failed'),
+  });
+
+  // Smart Coach mutation
+  const coachMutation = useMutation({
+    mutationFn: () => {
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
+      return api.post('/api/ai/coach', { message: lastMessage, toneMode: 'flirty' }).then(r => r.data);
+    },
+    onSuccess: (data) => {
+      if (data.suggestion) {
+        setMessage(data.suggestion);
+        inputRef.current?.focus();
+        toast.success('AI Coach suggested a reply! 🧠');
+      }
+    },
+    onError: () => toast.error('Coach suggestion failed'),
   });
 
   const messages = data?.messages || [];
@@ -265,6 +282,26 @@ export default function ChatWindow() {
           <button className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: '#9ca3af' }}>
             <Video className="w-4.5 h-4.5" />
           </button>
+          <button 
+            onClick={() => {
+              const venue = prompt('Suggest a venue for a date?');
+              if (venue && data?.conversation?.matchId) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(20, 0, 0, 0);
+                api.post('/api/dates', {
+                  matchId: data.conversation.matchId,
+                  proposedAt: tomorrow.toISOString(),
+                  venueName: venue
+                }).then(() => toast.success('Date proposed!'));
+              }
+            }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[#8b5cf6]/20 transition-colors" 
+            style={{ color: '#a78bfa' }}
+            title="Suggest a Date"
+          >
+            🍷
+          </button>
           <div className="relative">
             <button
               onClick={() => setShowSafetyMenu(!showSafetyMenu)}
@@ -341,7 +378,7 @@ export default function ChatWindow() {
                 style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
               >
                 {icebreakerMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                Generate AI Icebreaker
+                Generate Smart Icebreaker
               </button>
             )}
           </div>
@@ -430,6 +467,16 @@ export default function ChatWindow() {
         <div className="flex items-end gap-2">
           <button className="p-2.5 rounded-xl flex-shrink-0 hover:bg-white/5 transition-colors" style={{ color: '#6b7280' }}>
             <Paperclip className="w-5 h-5" />
+          </button>
+          
+          <button 
+            onClick={() => coachMutation.mutate()} 
+            disabled={coachMutation.isPending}
+            className="p-2.5 rounded-xl flex-shrink-0 hover:bg-white/5 transition-colors" 
+            style={{ color: '#8b5cf6' }}
+            title="Get Smart Coach Suggestion"
+          >
+            {coachMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
           </button>
 
           <div className="flex-1 relative">

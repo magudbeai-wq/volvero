@@ -9,8 +9,6 @@ const PLANS = [
   {
     id: 'free',
     name: 'Free',
-    nameSo: 'Bilaash',
-    nameAr: 'مجاني',
     monthlyPrice: 0,
     annualPrice: 0,
     description: 'Get started and explore the platform',
@@ -21,7 +19,7 @@ const PLANS = [
       'Limited messaging',
       'Basic filters',
     ],
-    notIncluded: ['See who liked you', 'Rewind swipes', 'AI icebreakers', 'Incognito mode'],
+    notIncluded: ['See who liked you', 'Rewind swipes', 'Smart icebreakers', 'Incognito mode'],
     cta: 'Get Started Free',
     ctaHref: '/sign-up',
     popular: false,
@@ -30,8 +28,6 @@ const PLANS = [
   {
     id: 'premium',
     name: 'Premium',
-    nameSo: 'Heer Sarena',
-    nameAr: 'مميز',
     monthlyPrice: 19.99,
     annualPrice: 12.49,
     description: 'The ultimate matching experience',
@@ -41,8 +37,8 @@ const PLANS = [
       'Rewind last swipe',
       '1 Boost per month',
       'Advanced filters',
-      'AI icebreakers',
-      'AI bio generator',
+      'Smart icebreakers',
+      'Smart bio generator',
       'Incognito mode',
       'Read receipts',
       'Priority ranking',
@@ -57,8 +53,6 @@ const PLANS = [
   {
     id: 'gold',
     name: 'Gold',
-    nameSo: 'Dahab',
-    nameAr: 'ذهبي',
     monthlyPrice: 34.99,
     annualPrice: 24.99,
     description: 'VIP experience with maximum features',
@@ -161,10 +155,7 @@ export default function PricingSection() {
 
               <div className="mb-6">
                 <h3 className="font-display font-bold text-xl text-white mb-1">{plan.name}</h3>
-                <div className="text-sm mb-4" style={{ color: '#6b7280' }}>
-                  {plan.nameSo} / <span dir="rtl">{plan.nameAr}</span>
-                </div>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mt-4">
                   <span className="text-4xl font-black text-white">
                     ${isAnnual ? plan.annualPrice : plan.monthlyPrice}
                   </span>

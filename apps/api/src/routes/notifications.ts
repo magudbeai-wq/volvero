@@ -7,7 +7,7 @@ const router = Router();
 // ── GET /api/notifications ────────────────────────────────────
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { clerkId: req.userId } });
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const page = Number(req.query.page) || 1;
@@ -33,7 +33,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
 // ── PUT /api/notifications/read-all ───────────────────────────
 router.put('/read-all', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { clerkId: req.userId } });
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     await prisma.notification.updateMany({

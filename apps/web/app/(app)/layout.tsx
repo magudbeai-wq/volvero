@@ -2,9 +2,15 @@ import type { Metadata } from 'next';
 import AppShell from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'LAMAANE DOORE App',
+  title: 'VOLVERO App',
 };
 
+import { SocketProvider } from '@/components/providers/SocketProvider';
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <SocketProvider>
+      <AppShell>{children}</AppShell>
+    </SocketProvider>
+  );
 }

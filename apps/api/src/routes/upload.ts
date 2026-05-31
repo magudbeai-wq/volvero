@@ -34,7 +34,7 @@ router.post('/photo', requireAuth, upload.single('photo'), async (req: AuthReque
     const result = await uploadProfilePhoto(base64, req.userId!);
 
     // Save to user photos array
-    const user = await prisma.user.findUnique({ where: { clerkId: req.userId! } });
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
     if (user) {
       const photos = user.photos.includes(result.url)
         ? user.photos

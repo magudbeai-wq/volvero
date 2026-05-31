@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Syne } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'react-hot-toast';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
@@ -22,36 +21,35 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: 'LAMAANE DOORE — Find Your Perfect Somali Match',
-    template: '%s | LAMAANE DOORE',
+    default: 'VOLVERO — Connect Beyond Borders',
+    template: '%s | VOLVERO',
   },
   description:
-    'The world\'s most premium Somali dating platform. AI-powered matchmaking, luxury experience, real connections. Find your perfect match today.',
+    'The world\'s most premium dating platform. Find meaningful connections anywhere in the world. Smart matchmaking, luxury experience, real connections.',
   keywords: [
-    'Somali dating', 'Somali matchmaking', 'Muslim dating', 'Somali singles',
-    'Somali marriage', 'halal dating', 'lamaane doore', 'Somali love',
+    'dating', 'matchmaking', 'premium dating', 'singles', 'international dating', 'volvero', 'connections', 'relationships'
   ],
-  authors: [{ name: 'LAMAANE DOORE' }],
-  creator: 'LAMAANE DOORE',
-  publisher: 'LAMAANE DOORE',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://lamaanedoore.com'),
+  authors: [{ name: 'VOLVERO Team' }],
+  creator: 'VOLVERO',
+  publisher: 'VOLVERO',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://volvero.com'),
   alternates: {
     canonical: '/',
-    languages: { 'en-US': '/en', 'ar': '/ar', 'so': '/so' },
+    languages: { 'en-US': '/en' },
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'LAMAANE DOORE — Find Your Perfect Somali Match',
-    description: 'The most premium Somali dating & matchmaking platform. AI-powered, culturally authentic, luxury experience.',
-    siteName: 'LAMAANE DOORE',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'LAMAANE DOORE' }],
+    title: 'VOLVERO — Connect Beyond Borders',
+    description: 'The most premium dating & matchmaking platform. Find meaningful connections anywhere in the world.',
+    siteName: 'VOLVERO',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VOLVERO' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LAMAANE DOORE — Find Your Perfect Somali Match',
-    description: 'The premium Somali dating platform. Real connections, AI matchmaking.',
+    title: 'VOLVERO — Connect Beyond Borders',
+    description: 'The premium dating platform. Real connections, smart matchmaking.',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.json',
@@ -68,48 +66,46 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#030311' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B1020' },
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.variable} ${syne.variable} font-sans antialiased`}>
-          <ThemeProvider>
-            <PostHogProvider>
-              <QueryProvider>
-                {children}
-                <Toaster
-                  position="top-center"
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: 'rgba(22, 22, 48, 0.95)',
-                      color: '#f3f4f6',
-                      border: '1px solid rgba(139, 92, 246, 0.3)',
-                      borderRadius: '16px',
-                      backdropFilter: 'blur(20px)',
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                    },
-                    success: {
-                      iconTheme: { primary: '#8b5cf6', secondary: '#f3f4f6' },
-                    },
-                    error: {
-                      iconTheme: { primary: '#ef4444', secondary: '#f3f4f6' },
-                    },
-                  }}
-                />
-                <Analytics />
-              </QueryProvider>
-            </PostHogProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${syne.variable} font-sans antialiased`}>
+        <ThemeProvider>
+          <PostHogProvider>
+            <QueryProvider>
+              {children}
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'rgba(19, 26, 43, 0.95)',
+                    color: '#f3f4f6',
+                    border: '1px solid rgba(124, 58, 237, 0.3)',
+                    borderRadius: '16px',
+                    backdropFilter: 'blur(20px)',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                  },
+                  success: {
+                    iconTheme: { primary: '#7C3AED', secondary: '#f3f4f6' },
+                  },
+                  error: {
+                    iconTheme: { primary: '#ef4444', secondary: '#f3f4f6' },
+                  },
+                }}
+              />
+              <Analytics />
+            </QueryProvider>
+          </PostHogProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

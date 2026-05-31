@@ -7,17 +7,13 @@ const STEPS = [
   {
     step: '01',
     title: 'Create Your Profile',
-    titleSo: 'Abuur Profaylkaaga',
-    titleAr: 'أنشئ ملفك الشخصي',
-    description: 'Sign up with email or phone. Build your rich Somali dating profile with photos, voice intro, and personality details.',
+    description: 'Sign up with email or phone. Build your rich dating profile with photos, voice intro, and personality details.',
     icon: '✨',
     color: '#8b5cf6',
   },
   {
     step: '02',
     title: 'Get Verified',
-    titleSo: 'La Xaqiiji',
-    titleAr: 'احصل على التحقق',
     description: 'Complete our quick selfie verification to get your blue badge. Verified profiles get 3x more matches.',
     icon: '✅',
     color: '#22c55e',
@@ -25,18 +21,14 @@ const STEPS = [
   {
     step: '03',
     title: 'Discover Matches',
-    titleSo: 'Hel Kuxidhxidhayaasha',
-    titleAr: 'اكتشف التطابقات',
-    description: 'Our AI engine curates your daily stack of compatible Somali singles. Swipe, like, and super-like.',
+    description: 'Our smart engine curates your daily stack of compatible singles. Swipe, like, and super-like.',
     icon: '💜',
     color: '#3b82f6',
   },
   {
     step: '04',
     title: 'Connect & Chat',
-    titleSo: 'Xiriir & Wadahadal',
-    titleAr: 'تواصل وتحدث',
-    description: 'When you match, start the conversation with AI icebreakers. Chat, voice call, video call — all encrypted.',
+    description: 'When you match, start the conversation with smart icebreakers. Chat, voice call, video call — all encrypted.',
     icon: '💬',
     color: '#f59e0b',
   },
@@ -106,9 +98,7 @@ export default function HowItWorksSection() {
                 </div>
               </div>
 
-              <h3 className="font-display font-bold text-lg mb-1 text-white">{step.title}</h3>
-              <div className="text-xs mb-1" style={{ color: '#6b7280' }}>{step.titleSo}</div>
-              <div className="text-xs mb-4" style={{ color: '#6b7280' }} dir="rtl">{step.titleAr}</div>
+              <h3 className="font-display font-bold text-lg mb-2 text-white">{step.title}</h3>
               <p className="text-sm leading-relaxed" style={{ color: '#9ca3af' }}>
                 {step.description}
               </p>

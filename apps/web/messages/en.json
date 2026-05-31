@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "LAMAANE DOORE",
-    "tagline": "Find Your Perfect Somali Match"
+    "name": "VOLVERO",
+    "tagline": "Connect Beyond Borders"
   },
   "nav": {
     "discover": "Discover",
@@ -13,13 +13,13 @@
   },
   "landing": {
     "hero": {
-      "badge": "AI-Powered Somali Matchmaking Platform",
-      "title1": "Find Your",
-      "title2": "Perfect Somali",
-      "title3": "Match",
-      "subtitle": "LAMAANE DOORE combines AI-powered compatibility with deep Somali cultural values. Meet verified singles who share your faith, traditions, and life goals.",
-      "cta_primary": "Start for Free",
-      "cta_secondary": "See How It Works"
+      "badge": "Premium Matchmaking Platform",
+      "title1": "Find Meaningful",
+      "title2": "Connections",
+      "title3": "Anywhere in the World",
+      "subtitle": "Join millions of people discovering relationships, friendships, and real connections on VOLVERO.",
+      "cta_primary": "Start Matching",
+      "cta_secondary": "Explore Profiles"
     },
     "stats": {
       "users": "Registered Singles",
@@ -48,7 +48,7 @@
   "chat": {
     "start": "Start the Conversation",
     "placeholder": "Type a message...",
-    "icebreaker": "Generate AI Icebreaker",
+    "icebreaker": "Generate Smart Icebreaker",
     "typing": "typing..."
   },
   "profile": {

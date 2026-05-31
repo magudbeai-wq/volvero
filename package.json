@@ -1,8 +1,8 @@
 {
-  "name": "lamaane-doore",
+  "name": "velora",
   "version": "1.0.0",
   "private": true,
-  "description": "LAMAANE DOORE — World-Class Premium Somali Dating Platform",
+  "description": "Velora — World-Class Premium Dating Platform",
   "workspaces": [
     "apps/*",
     "packages/*"

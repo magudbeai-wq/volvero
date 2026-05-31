@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import SwipeStack from '@/components/swipe/SwipeStack';
 
 export const metadata: Metadata = {
-  title: 'Discover — LAMAANE DOORE',
-  description: 'Discover compatible Somali singles near you with AI-powered matching.',
+  title: 'Discover — VOLVERO',
+  description: 'Discover compatible singles near you with smart matching.',
 };
 
 export default function DiscoverPage() {

@@ -43,7 +43,7 @@ export default function MatchesPage() {
           <div className="text-6xl mb-4">💜</div>
           <h3 className="font-display font-bold text-xl text-white mb-2">No matches yet</h3>
           <p className="mb-6" style={{ color: '#9ca3af' }}>
-            Start swiping to find your perfect Somali match!
+            Start swiping to find your perfect match!
           </p>
           <Link href="/discover" className="btn-primary">
             Start Discovering

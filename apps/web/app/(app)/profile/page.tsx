@@ -1,6 +1,5 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -12,9 +11,10 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import toast from 'react-hot-toast';
+import { useCurrentUser } from '@/lib/hooks/useAuth';
 
 export default function ProfilePage() {
-  const { user: clerkUser } = useUser();
+  const user = useCurrentUser();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isVerifying, setIsVerifying] = useState(false);

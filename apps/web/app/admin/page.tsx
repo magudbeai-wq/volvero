@@ -92,7 +92,7 @@ export default function AdminDashboard() {
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-display font-black text-white text-sm">LAMAANE DOORE</div>
+            <div className="font-display font-black text-white text-sm">VOLVERO</div>
             <div className="text-xs" style={{ color: '#6b7280' }}>Admin Dashboard</div>
           </div>
         </div>

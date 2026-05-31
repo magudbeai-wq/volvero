@@ -33,7 +33,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
 
 // ── POST /api/users/onboard ──────────────────────────────────
 const onboardSchema = z.object({
-  clerkId: z.string(),
+  supabaseId: z.string(),
   email: z.string().email(),
   fullName: z.string().min(2).max(100),
   dateOfBirth: z.string().optional(),
@@ -62,7 +62,7 @@ router.post('/onboard', async (req, res) => {
     const completion = Math.round((filled.length / completionFields.length) * 100);
 
     const user = await prisma.user.upsert({
-      where: { clerkId: data.clerkId },
+      where: { supabaseId: data.supabaseId },
       create: {
         ...data,
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
@@ -96,6 +96,7 @@ router.patch('/me', requireAuth, async (req: AuthRequest, res) => {
       'relationshipGoal', 'languages', 'interests', 'personalityTraits',
       'lifestylePrefs', 'minAgePreference', 'maxAgePreference', 'maxDistance',
       'showDistance', 'showAge', 'isIncognito', 'gender', 'photos', 'profilePhoto',
+      'voiceIntroUrl', 'introVideoUrl'
     ];
 
     const updates: Record<string, unknown> = {};
@@ -142,7 +143,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         bio: true,
         city: true,
         country: true,
-        tribe: true,
+
         religion: true,
         maritalStatus: true,
         educationLevel: true,

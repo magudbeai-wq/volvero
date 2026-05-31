@@ -59,7 +59,7 @@ export async function uploadProfilePhoto(
   }
 
   const result = await cloudinary.uploader.upload(base64OrUrl, {
-    folder: `lamaane-doore/profiles/${userId}`,
+    folder: `velora/profiles/${userId}`,
     transformation: [
       { width: 800, height: 1000, crop: 'fill', gravity: 'face' },
       { quality: 'auto:good', fetch_format: 'auto' },
@@ -97,7 +97,7 @@ export async function uploadStoryMedia(
   }
 
   const result = await cloudinary.uploader.upload(base64OrUrl, {
-    folder: `lamaane-doore/stories/${userId}`,
+    folder: `velora/stories/${userId}`,
     resource_type: 'auto',
     transformation: [
       { width: 1080, height: 1920, crop: 'fill' },
@@ -133,7 +133,7 @@ export async function uploadChatMedia(
   }
 
   const result = await cloudinary.uploader.upload(base64OrUrl, {
-    folder: `lamaane-doore/chat/${conversationId}`,
+    folder: `velora/chat/${conversationId}`,
     resource_type: 'auto',
     transformation: [
       { width: 1200, crop: 'limit' },
@@ -166,14 +166,14 @@ export function generateSignedUploadParams(userId: string, folder: string) {
       timestamp: Math.round(Date.now() / 1000),
       cloudName: 'mock_cloud',
       apiKey: 'mock_api_key',
-      folder: `lamaane-doore/${folder}/${userId}`,
+      folder: `velora/${folder}/${userId}`,
     };
   }
 
   const timestamp = Math.round(Date.now() / 1000);
   const params = {
     timestamp,
-    folder: `lamaane-doore/${folder}/${userId}`,
+    folder: `velora/${folder}/${userId}`,
     transformation: 'q_auto:good,f_auto',
   };
 

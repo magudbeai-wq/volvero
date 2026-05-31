@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import {
-  SOMALI_TRIBES, INTERESTS, LANGUAGES, PERSONALITY_TRAITS, LIFESTYLE_PREFS
+  INTERESTS, LANGUAGES, PERSONALITY_TRAITS, LIFESTYLE_PREFS
 } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
@@ -22,8 +22,6 @@ interface OnboardingData {
   gender: Gender | '';
   city: string;
   country: string;
-  tribe: string;
-  customTribe: string;
   religion: Religion | '';
   relationshipGoal: RelationshipGoal | '';
   career: string;
@@ -34,25 +32,24 @@ interface OnboardingData {
 }
 
 const STEPS = [
-  { id: 'basics', title: 'The Basics', titleSo: 'Aasaasiga', emoji: '👋' },
-  { id: 'identity', title: 'Your Identity', titleSo: 'Aqoonsigaaga', emoji: '🌍' },
-  { id: 'goals', title: 'What You Want', titleSo: 'Waxa Aad Rabtid', emoji: '💜' },
-  { id: 'about', title: 'About You', titleSo: 'Adigu Xagaad Tahay', emoji: '✨' },
-  { id: 'interests', title: 'Your Interests', titleSo: 'Xiisahaaga', emoji: '⭐' },
+  { id: 'basics', title: 'The Basics', emoji: '👋' },
+  { id: 'identity', title: 'Your Identity', emoji: '🌍' },
+  { id: 'goals', title: 'What You Want', emoji: '💜' },
+  { id: 'about', title: 'About You', emoji: '✨' },
+  { id: 'interests', title: 'Your Interests', emoji: '⭐' },
 ];
 
 export default function OnboardingPage() {
-  const { user: clerkUser } = useUser();
   const router = useRouter();
+  const supabase = createClient();
+  const [authUser, setAuthUser] = useState<any>(null);
   const [step, setStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
-    fullName: clerkUser?.fullName || '',
+    fullName: '',
     dateOfBirth: '',
     gender: '',
     city: '',
     country: '',
-    tribe: '',
-    customTribe: '',
     religion: '',
     relationshipGoal: '',
     career: '',
@@ -62,11 +59,19 @@ export default function OnboardingPage() {
     height: '',
   });
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setAuthUser(user);
+      }
+    });
+  }, [supabase]);
+
   const mutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       api.post('/api/users/onboard', payload).then(r => r.data),
     onSuccess: () => {
-      toast.success('Profile created! Welcome to LAMAANE DOORE 💜');
+      toast.success('Profile created! Welcome to VOLVERO 💜');
       router.push('/discover');
     },
     onError: () => toast.error('Failed to save profile. Please try again.'),
@@ -95,16 +100,15 @@ export default function OnboardingPage() {
   };
 
   const handleSubmit = () => {
-    if (!clerkUser) return;
+    if (!authUser) return;
     mutation.mutate({
-      clerkId: clerkUser.id,
-      email: clerkUser.emailAddresses[0]?.emailAddress,
+      supabaseId: authUser.id,
+      email: authUser.email,
       fullName: data.fullName,
       dateOfBirth: data.dateOfBirth,
       gender: data.gender || undefined,
       city: data.city,
       country: data.country,
-      tribe: data.tribe === 'Other (specify below)' ? data.customTribe : data.tribe,
       religion: data.religion || undefined,
       relationshipGoal: data.relationshipGoal || undefined,
       career: data.career,
@@ -161,7 +165,6 @@ export default function OnboardingPage() {
             <div className="text-center mb-8">
               <div className="text-5xl mb-3">{STEPS[step].emoji}</div>
               <h2 className="font-display text-2xl font-black text-white">{STEPS[step].title}</h2>
-              <p className="text-sm mt-1" style={{ color: '#6b7280' }}>{STEPS[step].titleSo}</p>
             </div>
 
             {/* Step content */}
@@ -229,21 +232,6 @@ export default function OnboardingPage() {
                 <div>
                   <label className="text-sm font-medium mb-1.5 block" style={{ color: '#9ca3af' }}>Country</label>
                   <input className="input-field" value={data.country} onChange={e => update('country', e.target.value)} placeholder="Your country" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block" style={{ color: '#9ca3af' }}>Tribe / Clan (optional)</label>
-                  <select
-                    className="input-field"
-                    value={data.tribe}
-                    onChange={e => update('tribe', e.target.value)}
-                    style={{ background: 'rgba(255,255,255,0.05)' }}
-                  >
-                    <option value="">Prefer not to say</option>
-                    {SOMALI_TRIBES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  {data.tribe === 'Other (specify below)' && (
-                    <input className="input-field mt-2" value={data.customTribe} onChange={e => update('customTribe', e.target.value)} placeholder="Specify your tribe" />
-                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block" style={{ color: '#9ca3af' }}>Religion</label>
@@ -343,7 +331,7 @@ export default function OnboardingPage() {
             {step === 4 && (
               <div>
                 <p className="text-sm mb-4" style={{ color: '#9ca3af' }}>
-                  Select up to 10 interests. This helps our AI find your best matches.
+                  Select up to 10 interests. This helps our Smart Matching system find your best matches.
                 </p>
                 <div className="flex flex-wrap gap-2 max-h-80 overflow-y-auto pr-1">
                   {INTERESTS.map(interest => (

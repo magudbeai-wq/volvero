@@ -10,9 +10,9 @@ export default function AISection() {
 
   const AI_FEATURES = [
     { icon: Brain, title: 'Compatibility Scoring', desc: 'Analyzes 40+ data points across religion, lifestyle, interests, and personality to generate your match score.' },
-    { icon: Target, title: 'Smart Recommendations', desc: 'Daily curated stacks of profiles ranked by compatibility. Better matches over time as the AI learns your preferences.' },
-    { icon: Zap, title: 'AI Icebreakers', desc: 'Personalized conversation starters generated from shared interests. Never run out of things to say.' },
-    { icon: TrendingUp, title: 'Profile Optimization', desc: 'Get AI suggestions to improve your profile completion, photo quality, and bio to attract better matches.' },
+    { icon: Target, title: 'Smart Recommendations', desc: 'Daily curated stacks of profiles ranked by compatibility. Better matches over time as the system learns your preferences.' },
+    { icon: Zap, title: 'Smart Icebreakers', desc: 'Personalized conversation starters generated from shared interests. Never run out of things to say.' },
+    { icon: TrendingUp, title: 'Profile Optimization', desc: 'Get smart suggestions to improve your profile completion, photo quality, and bio to attract better matches.' },
   ];
 
   return (
@@ -36,19 +36,19 @@ export default function AISection() {
               style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
             >
               <Brain className="w-3.5 h-3.5" />
-              AI-POWERED MATCHING
+              SMART MATCHING
             </div>
 
             <h2 className="font-display text-4xl sm:text-5xl font-black mb-6 text-white leading-tight">
               Smarter Matches
               <br />
-              <span className="gradient-text">Powered by AI</span>
+              <span className="gradient-text">Powered by Advanced Algorithms</span>
             </h2>
 
             <p className="text-lg mb-10" style={{ color: '#9ca3af', lineHeight: '1.8' }}>
-              Our proprietary compatibility engine was built specifically for the Somali Muslim community.
-              It understands the nuances of Somali culture, Islamic values, and what makes a truly
-              compatible match — not just shared hobbies.
+              Our proprietary compatibility engine was built to connect individuals based on deep values.
+              It understands the nuances of shared lifestyle goals and what makes a truly
+              compatible match — not just surface-level hobbies.
             </p>
 
             <div className="space-y-6">
@@ -127,7 +127,6 @@ export default function AISection() {
               >
                 <div className="font-display text-5xl font-black gradient-text">94%</div>
                 <div className="text-sm font-medium mt-1 text-white">Overall Compatibility Score</div>
-                <div className="text-xs mt-1" style={{ color: '#6b7280' }}>درجة التوافق الإجمالية</div>
               </div>
             </div>
 
@@ -138,8 +137,8 @@ export default function AISection() {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               style={{ background: 'rgba(22,22,48,0.9)', border: '1px solid rgba(139,92,246,0.3)' }}
             >
-              <div className="text-2xl mb-1">🤖</div>
-              <div className="text-xs font-semibold text-white">AI Match</div>
+              <div className="text-2xl mb-1">✨</div>
+              <div className="text-xs font-semibold text-white">Smart Match</div>
               <div className="text-xs" style={{ color: '#a78bfa' }}>Updated daily</div>
             </motion.div>
           </motion.div>

@@ -33,7 +33,7 @@ export async function sendEmail(type: EmailType, payload: EmailPayload): Promise
     return;
   }
 
-  const from = `${process.env.RESEND_FROM_NAME || 'LAMAANE DOORE'} <${process.env.RESEND_FROM_EMAIL || 'hello@lamaanedoore.com'}>`;
+  const from = `${process.env.RESEND_FROM_NAME || 'Velora'} <${process.env.RESEND_FROM_EMAIL || 'hello@velora.com'}>`;
 
   try {
     let subject = '';
@@ -41,17 +41,17 @@ export async function sendEmail(type: EmailType, payload: EmailPayload): Promise
 
     switch (type) {
       case EmailType.WELCOME:
-        subject = `Welcome to LAMAANE DOORE, ${payload.name}! 💜`;
+        subject = `Welcome to Velora, ${payload.name}! 💜`;
         html = welcomeTemplate(payload.name);
         break;
 
       case EmailType.MATCH_NOTIFICATION:
-        subject = `You have a new match on LAMAANE DOORE! 💜`;
+        subject = `You have a new match on Velora! 💜`;
         html = matchTemplate(payload.name, payload.matchName as string);
         break;
 
       case EmailType.SUBSCRIPTION_WELCOME:
-        subject = `Welcome to Premium — You're now a LAMAANE DOORE ${payload.tier} member!`;
+        subject = `Welcome to Premium — You're now a Velora ${payload.tier} member!`;
         html = subscriptionTemplate(payload.name, payload.tier as string);
         break;
 
@@ -73,18 +73,18 @@ function welcomeTemplate(name: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Welcome to LAMAANE DOORE</title>
+  <title>Welcome to Velora</title>
 </head>
 <body style="margin:0;padding:0;background:#0a0a1a;font-family:Inter,system-ui,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="background:linear-gradient(135deg,#1a0a2e 0%,#0d1b4b 100%);border-radius:24px;padding:48px;border:1px solid rgba(139,92,246,0.3);">
       <div style="text-align:center;margin-bottom:32px;">
-        <h1 style="color:#a78bfa;font-size:32px;margin:0;font-weight:800;letter-spacing:-0.5px;">LAMAANE DOORE</h1>
-        <p style="color:#6b7280;font-size:14px;margin:8px 0 0;">Find Your Perfect Somali Match</p>
+        <h1 style="color:#a78bfa;font-size:32px;margin:0;font-weight:800;letter-spacing:-0.5px;">VELORA</h1>
+        <p style="color:#6b7280;font-size:14px;margin:8px 0 0;">Find Your Perfect Match Worldwide</p>
       </div>
       <h2 style="color:#f3f4f6;font-size:24px;font-weight:700;margin:0 0 16px;">Welcome, ${name}! 💜</h2>
       <p style="color:#d1d5db;font-size:16px;line-height:1.6;margin:0 0 24px;">
-        You've joined the most premium Somali matchmaking platform. Your journey to finding your perfect match starts now.
+        You've joined the most premium matchmaking platform. Your journey to finding your perfect match starts now.
       </p>
       <div style="background:rgba(139,92,246,0.1);border-radius:16px;padding:24px;margin:24px 0;border:1px solid rgba(139,92,246,0.2);">
         <h3 style="color:#a78bfa;margin:0 0 16px;font-size:16px;">Get started in 3 steps:</h3>
@@ -98,7 +98,7 @@ function welcomeTemplate(name: string): string {
       </a>
     </div>
     <p style="color:#4b5563;font-size:12px;text-align:center;margin:24px 0 0;">
-      © 2024 LAMAANE DOORE. All rights reserved.
+      © 2024 Velora. All rights reserved.
     </p>
   </div>
 </body>

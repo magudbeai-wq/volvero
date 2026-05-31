@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { supabase } from '../lib/supabase.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../utils/logger.js';
 
 export interface AuthRequest extends Request {
   userId?: string;
-  clerkId?: string;
+  supabaseId?: string;
   user?: {
     id: string;
-    clerkId: string;
+    supabaseId: string;
     subscriptionTier: string;
     status: string;
   };
@@ -29,22 +29,22 @@ export async function requireAuth(
 
     const token = authHeader.split(' ')[1];
 
-    // Verify with Clerk
-    const sessionClaims = await clerkClient.verifyToken(token);
+    // Verify with Supabase
+    const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser(token);
 
-    if (!sessionClaims?.sub) {
+    if (authError || !supabaseUser) {
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
 
-    const clerkId = sessionClaims.sub;
+    const supabaseId = supabaseUser.id;
 
     // Get user from our DB
     const user = await prisma.user.findUnique({
-      where: { clerkId },
+      where: { supabaseId },
       select: {
         id: true,
-        clerkId: true,
+        supabaseId: true,
         subscriptionTier: true,
         status: true,
       },
@@ -66,7 +66,7 @@ export async function requireAuth(
     }
 
     req.userId = user.id;
-    req.clerkId = clerkId;
+    req.supabaseId = supabaseId;
     req.user = user;
 
     next();

@@ -24,6 +24,8 @@ interface Profile {
   bio?: string;
   profilePhoto?: string;
   photos: string[];
+  introVideoUrl?: string;
+  voiceIntroUrl?: string;
   isVerified: boolean;
   compatibility?: number;
   distance?: number;
@@ -140,9 +142,18 @@ export default function SwipeCard({ profile, isTop, onSwipe, style }: SwipeCardP
       whileDrag={{ scale: 1.02 }}
       whileHover={isTop ? { scale: 1.01 } : {}}
     >
-      {/* Card image */}
+      {/* Card image/video */}
       <div className="absolute inset-0 rounded-4xl overflow-hidden">
-        {photoUrl ? (
+        {profile.introVideoUrl ? (
+          <video
+            src={profile.introVideoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="object-cover w-full h-full"
+          />
+        ) : photoUrl ? (
           <Image
             src={photoUrl}
             alt={profile.fullName}
@@ -234,6 +245,12 @@ export default function SwipeCard({ profile, isTop, onSwipe, style }: SwipeCardP
               <p className="text-sm leading-relaxed line-clamp-2 mb-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 {profile.bio}
               </p>
+            )}
+
+            {profile.voiceIntroUrl && (
+              <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+                <audio controls src={profile.voiceIntroUrl} className="h-8 w-full max-w-[200px]" style={{ filter: 'invert(1)' }} />
+              </div>
             )}
 
             {profile.interests.length > 0 && (

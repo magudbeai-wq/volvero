@@ -1,33 +1,39 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useUser, useAuth } from '@clerk/nextjs';
+import { createClient } from '@/utils/supabase/client';
 import { useAppStore } from '@/lib/store/appStore';
 
 /**
- * Syncs Clerk user token to global window so axios interceptor can use it.
+ * Syncs Supabase user token to global window so axios interceptor can use it.
  */
 export function useAuthSync() {
-  const { getToken } = useAuth();
-  const { user: clerkUser, isLoaded } = useUser();
   const { setUser } = useAppStore();
+  const supabase = createClient();
 
   useEffect(() => {
-    if (!isLoaded || !clerkUser) return;
-
-    // Refresh token periodically
     const syncToken = async () => {
-      const token = await getToken();
-      if (token && typeof window !== 'undefined') {
-        (window as Window & { __clerkToken?: string }).__clerkToken = token;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token && typeof window !== 'undefined') {
+        (window as Window & { __supabaseToken?: string }).__supabaseToken = session.access_token;
       }
     };
 
     syncToken();
-    const interval = setInterval(syncToken, 4 * 60 * 1000); // Refresh every 4 min
 
-    return () => clearInterval(interval);
-  }, [clerkUser, isLoaded, getToken]);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.access_token && typeof window !== 'undefined') {
+        (window as Window & { __supabaseToken?: string }).__supabaseToken = session.access_token;
+      } else if (event === 'SIGNED_OUT' && typeof window !== 'undefined') {
+        (window as Window & { __supabaseToken?: string }).__supabaseToken = undefined;
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase.auth, setUser]);
 }
 
 export function useCurrentUser() {

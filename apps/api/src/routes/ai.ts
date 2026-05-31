@@ -39,7 +39,7 @@ router.post('/icebreaker', requireAuth, async (req: AuthRequest, res) => {
           messages: [
             {
               role: 'system',
-              content: `You are a Somali dating coach for LAMAANE DOORE. Generate 3 warm, culturally respectful icebreaker messages for a Somali dating app. Keep them short (1-2 sentences), genuine, and not generic. Don't use pickup lines. Focus on shared interests and cultural connection.`
+              content: `You are an expert dating coach for Velora, a premium international dating app. Generate 3 warm, respectful icebreaker messages. Keep them short (1-2 sentences), genuine, and not generic. Don't use pickup lines. Focus on shared interests.`
             },
             {
               role: 'user',
@@ -147,6 +147,56 @@ router.get('/recommendations', requireAuth, async (req: AuthRequest, res) => {
     res.json({ recommendations });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch recommendations' });
+  }
+});
+
+// ── POST /api/ai/coach ─────────────────────────────────────────
+router.post('/coach', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { message, context, toneMode = 'friendly' } = req.body;
+    
+    // Simulate AI delay for UX
+    await new Promise(r => setTimeout(r, 800));
+
+    // Rule-based fallback if OpenAI is not configured
+    let suggestion = "That sounds great! How about we grab a coffee sometime?";
+    
+    if (toneMode === 'flirty') suggestion = "I love that energy 😉";
+    else if (toneMode === 'formal') suggestion = "That is very interesting. I would love to learn more.";
+    
+    if (message?.includes('?')) {
+       suggestion = "That's a great question! I think...";
+    }
+
+    if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith('sk-YOUR')) {
+      try {
+        const { OpenAI } = await import('openai');
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const completion = await openai.chat.completions.create({
+          model: process.env.OPENAI_MODEL || 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an expert dating coach for Velora. Suggest a great response. The user wants the tone to be: ${toneMode}.`
+            },
+            {
+              role: 'user',
+              content: `Context: ${context || 'None'}\nLast message: ${message}`
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 150,
+        });
+
+        suggestion = completion.choices[0]?.message?.content || suggestion;
+      } catch (e) {
+        logger.warn('OpenAI coach failed');
+      }
+    }
+
+    res.json({ suggestion, source: 'ai' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate coach suggestion' });
   }
 });
 

@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -11,13 +10,14 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import {
-  SOMALI_TRIBES, INTERESTS, LANGUAGES, PERSONALITY_TRAITS, LIFESTYLE_PREFS
+  INTERESTS, LANGUAGES, PERSONALITY_TRAITS, LIFESTYLE_PREFS
 } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useCurrentUser } from '@/lib/hooks/useAuth';
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user: clerkUser } = useUser();
+  const user = useCurrentUser();
 
   const { data, isLoading } = useQuery({
     queryKey: ['profile', 'me'],
@@ -38,7 +38,6 @@ export default function EditProfilePage() {
       city: p.city || '',
       country: p.country || '',
       career: p.career || '',
-      tribe: p.tribe || '',
       height: p.height || '',
       interests: p.interests || [],
       languages: p.languages || [],
@@ -49,8 +48,11 @@ export default function EditProfilePage() {
       smokingStatus: p.smokingStatus || '',
       exerciseFrequency: p.exerciseFrequency || '',
       dietaryPrefs: p.dietaryPrefs || '',
+      dietaryPrefs: p.dietaryPrefs || '',
       photos: p.photos || [],
       profilePhoto: p.profilePhoto || '',
+      voiceIntroUrl: p.voiceIntroUrl || '',
+      introVideoUrl: p.introVideoUrl || '',
     });
   };
 
@@ -253,6 +255,28 @@ export default function EditProfilePage() {
           </div>
         </Section>
 
+        {/* ── Rich Media ──────────────────────────────────── */}
+        <Section title="Rich Media" sub="Express yourself with voice and video">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Video Intro (URL)" sub="TikTok/YouTube short link">
+              <input 
+                className="input-field" 
+                placeholder="https://..." 
+                value={form.introVideoUrl as string || ''} 
+                onChange={e => update('introVideoUrl', e.target.value)} 
+              />
+            </Field>
+            <Field label="Voice Prompt (URL)" sub="Audio link or Soundcloud">
+              <input 
+                className="input-field" 
+                placeholder="https://..." 
+                value={form.voiceIntroUrl as string || ''} 
+                onChange={e => update('voiceIntroUrl', e.target.value)} 
+              />
+            </Field>
+          </div>
+        </Section>
+
         {/* ── Basic Info ──────────────────────────────────── */}
         <Section title="Basic Info">
           <Field label="Full Name">
@@ -287,12 +311,6 @@ export default function EditProfilePage() {
 
         {/* ── Identity ────────────────────────────────────── */}
         <Section title="Identity">
-          <Field label="Tribe / Clan">
-            <select className="input-field" value={form.tribe as string || ''} onChange={e => update('tribe', e.target.value)} style={{ background: 'rgba(255,255,255,0.05)' }}>
-              <option value="">Prefer not to say</option>
-              {SOMALI_TRIBES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </Field>
           <Field label="Languages Spoken">
             <div className="flex flex-wrap gap-2">
               {LANGUAGES.map(lang => (

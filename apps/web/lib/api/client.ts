@@ -8,12 +8,12 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor — attach Clerk token
+// Request interceptor — attach Supabase token
 api.interceptors.request.use(async (config) => {
   try {
     // Token is set by useAuthSync hook in the browser
     if (typeof window !== 'undefined') {
-      const token = (window as Window & { __clerkToken?: string }).__clerkToken;
+      const token = (window as Window & { __supabaseToken?: string }).__supabaseToken;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

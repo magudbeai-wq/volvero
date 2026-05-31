@@ -7,24 +7,21 @@ import { Brain, Shield, MessageCircle, MapPin, Zap, Star, Heart, Eye } from 'luc
 const FEATURES = [
   {
     icon: Brain,
-    title: 'AI Compatibility Engine',
-    titleAr: 'محرك التوافق بالذكاء الاصطناعي',
-    description: 'Advanced algorithms analyze 40+ compatibility factors including religion, lifestyle, goals, and personality to find your ideal match.',
+    title: 'Smart Compatibility Engine',
+    description: 'Advanced algorithms analyze 40+ compatibility factors including lifestyle, goals, and personality to find your ideal match.',
     color: '#8b5cf6',
     glow: 'rgba(139,92,246,0.3)',
   },
   {
     icon: Shield,
     title: 'Verified Profiles Only',
-    titleAr: 'ملفات شخصية موثقة فقط',
-    description: 'Every profile goes through our selfie verification and identity check process. Blue badge = real person.',
+    description: 'Every profile goes through our verification and identity check process. Blue badge = real person.',
     color: '#22c55e',
     glow: 'rgba(34,197,94,0.3)',
   },
   {
     icon: MessageCircle,
     title: 'Encrypted Real-Time Chat',
-    titleAr: 'محادثة فورية مشفرة',
     description: 'End-to-end encrypted messaging with voice notes, reactions, GIFs, and video calling built right in.',
     color: '#3b82f6',
     glow: 'rgba(59,130,246,0.3)',
@@ -32,23 +29,20 @@ const FEATURES = [
   {
     icon: MapPin,
     title: 'Global Discovery',
-    titleAr: 'اكتشاف عالمي',
-    description: 'Find Somali singles nearby or across the globe with our location-based discovery and Passport mode.',
+    description: 'Find singles nearby or across the globe with our location-based discovery and Passport mode.',
     color: '#f59e0b',
     glow: 'rgba(245,158,11,0.3)',
   },
   {
     icon: Zap,
     title: 'Smart Icebreakers',
-    titleAr: 'كاسرات الجليد الذكية',
-    description: 'AI generates personalized conversation starters based on your shared interests. Never be awkward again.',
+    description: 'Our system generates personalized conversation starters based on your shared interests. Never be awkward again.',
     color: '#ec4899',
     glow: 'rgba(236,72,153,0.3)',
   },
   {
     icon: Eye,
     title: 'Incognito Mode',
-    titleAr: 'وضع التخفي',
     description: 'Browse profiles privately. Control who sees your profile with Premium incognito mode.',
     color: '#6366f1',
     glow: 'rgba(99,102,241,0.3)',
@@ -56,16 +50,14 @@ const FEATURES = [
   {
     icon: Star,
     title: 'Super Like & Boost',
-    titleAr: 'إعجاب خاص وتعزيز',
     description: 'Stand out with Super Likes and Profile Boosts. Get 10x more visibility during peak hours.',
     color: '#fbbf24',
     glow: 'rgba(251,191,36,0.3)',
   },
   {
     icon: Heart,
-    title: 'Somali Cultural Values',
-    titleAr: 'قيم الثقافة الصومالية',
-    description: 'Built with deep respect for Somali culture, Islamic values, and family-centered relationships.',
+    title: 'Deep Shared Values',
+    description: 'Built with deep respect for diverse cultures and family-centered relationships globally.',
     color: '#a78bfa',
     glow: 'rgba(167,139,250,0.3)',
   },
@@ -97,8 +89,8 @@ export default function FeaturesSection() {
             <span className="gradient-text">Your Perfect Match</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg" style={{ color: '#9ca3af' }}>
-            Built from the ground up for the global Somali community with enterprise-grade
-            technology and culturally authentic design.
+            Built from the ground up for the global community with enterprise-grade
+            technology and breathtaking design.
           </p>
         </motion.div>
 
@@ -123,12 +115,9 @@ export default function FeaturesSection() {
                 >
                   <Icon className="w-6 h-6" style={{ color: feature.color }} />
                 </div>
-                <h3 className="font-display font-bold text-base mb-1 text-white">
+                <h3 className="font-display font-bold text-base mb-2 text-white">
                   {feature.title}
                 </h3>
-                <p className="text-xs mb-2" style={{ color: '#6b7280' }} dir="rtl">
-                  {feature.titleAr}
-                </p>
                 <p className="text-sm leading-relaxed" style={{ color: '#9ca3af' }}>
                   {feature.description}
                 </p>

@@ -5,20 +5,18 @@ import { motion, useInView } from 'framer-motion';
 
 const TESTIMONIALS = [
   {
-    name: 'Hodan & Abdi',
+    name: 'Emma & John',
     location: 'Toronto, Canada',
     married: true,
-    quote: 'We matched in the first week! The AI really understood what we were looking for. Married after 6 months of knowing each other. LAMAANE DOORE changed our lives.',
-    quoteSo: 'Waan is-barbarisannay toddobaadkii koowaad! AI-gu si run ah ayuu u fahmay waxa aan raadinayay.',
+    quote: 'We matched in the first week! The smart matching engine really understood what we were looking for. Married after 6 months of knowing each other. VOLVERO changed our lives.',
     match: 98,
     time: '6 months ago',
   },
   {
-    name: 'Fadumo & Hassan',
+    name: 'Sarah & Michael',
     location: 'London, UK',
     married: false,
-    quote: 'As a Somali woman in the diaspora, I struggled to find someone who truly shares my values. LAMAANE DOORE found me a match from my city who I would have never met otherwise.',
-    quoteSo: 'Soomaalida xaaladda guriga ah, waxaan ku niyad jabsanahay inaan helo qof qiimahaygii wadaaga.',
+    quote: 'I struggled to find someone who truly shares my values. VOLVERO found me a match from my city who I would have never met otherwise.',
     match: 95,
     time: '3 months ago',
   },
@@ -26,17 +24,15 @@ const TESTIMONIALS = [
     name: 'Amina & Yusuf',
     location: 'Minneapolis, USA',
     married: true,
-    quote: 'The verification system gave me so much confidence. Every profile I interacted with was real. We\'re now engaged and planning our Somali wedding!',
-    quoteSo: 'Nidaamka xaqiijinta ayaa awood badan ii siiyay. Hadda waan afgarannahay!',
+    quote: 'The verification system gave me so much confidence. Every profile I interacted with was real. We\'re now engaged and planning our wedding!',
     match: 92,
     time: '1 year ago',
   },
   {
-    name: 'Nasteho & Omar',
+    name: 'Nadia & Omar',
     location: 'Dubai, UAE',
     married: false,
-    quote: 'The AI icebreakers were genius. I was nervous to start conversations but the suggestions felt so natural. We\'ve been together for 4 months now.',
-    quoteSo: 'Kaadiyadaha qaboojiyaha AI-ga waxay ahaayeen faa\'iido weyn.',
+    quote: 'The smart icebreakers were genius. I was nervous to start conversations but the suggestions felt so natural. We\'ve been together for 4 months now.',
     match: 89,
     time: '4 months ago',
   },
@@ -114,10 +110,6 @@ export default function TestimonialsSection() {
               <blockquote className="text-base mb-3 leading-relaxed" style={{ color: '#d1d5db' }}>
                 "{t.quote}"
               </blockquote>
-
-              <p className="text-sm italic" style={{ color: '#6b7280' }}>
-                "{t.quoteSo}"
-              </p>
 
               <div className="mt-4 text-xs" style={{ color: '#6b7280' }}>
                 {t.time}

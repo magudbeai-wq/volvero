@@ -81,13 +81,13 @@ export const useAppStore = create<AppState>()(
         resetFilters: () => set({ discoverFilters: DEFAULT_FILTERS }),
       }),
       {
-        name: 'lamaane-doore-store',
+        name: 'volvero-store',
         partialize: (state) => ({
           user: state.user,
           discoverFilters: state.discoverFilters,
         }),
       }
     ),
-    { name: 'LamaaneDoore' }
+    { name: 'VOLVERO' }
   )
 );

@@ -37,24 +37,18 @@ export function formatCompactNumber(num: number): string {
   return num.toString();
 }
 
-export const SOMALI_TRIBES = [
-  'Hawiye', 'Darod', 'Dir', 'Isaaq', 'Rahanweyn (Digil-Mirifle)',
-  'Benadiri', 'Ashraf', 'Gaboye', 'Jareer (Gosha)',
-  'Other (specify below)', 'Prefer not to say',
-];
-
 export const INTERESTS = [
   'Travel', 'Cooking', 'Sports', 'Reading', 'Music', 'Art', 'Photography',
   'Technology', 'Fashion', 'Fitness', 'Gaming', 'Movies', 'Nature',
-  'Volunteering', 'Business', 'Politics', 'Islam', 'Languages',
+  'Volunteering', 'Business', 'Politics', 'Spirituality', 'Languages',
   'Dancing', 'Writing', 'Podcasts', 'DIY', 'Gardening', 'Pets',
-  'Somali Culture', 'Family', 'Entrepreneurship', 'Education',
+  'Family', 'Entrepreneurship', 'Education',
 ];
 
 export const LANGUAGES = [
-  'Somali', 'English', 'Arabic', 'Swahili', 'Amharic',
-  'French', 'Italian', 'Swedish', 'Dutch', 'German',
-  'Turkish', 'Oromo', 'Tigrinya',
+  'English', 'Spanish', 'French', 'German', 'Italian',
+  'Portuguese', 'Mandarin', 'Japanese', 'Korean', 'Hindi',
+  'Russian', 'Dutch', 'Swedish', 'Turkish'
 ];
 
 export const PERSONALITY_TRAITS = [

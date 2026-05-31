@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Menu, X } from 'lucide-react';
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
+import { Menu, X, User } from 'lucide-react';
+import { useCurrentUser } from '@/lib/hooks/useAuth';
+import Image from 'next/image';
 
 const NAV_LINKS = [
   { href: '#features', label: 'Features' },
   { href: '#how-it-works', label: 'How it Works' },
-  { href: '#ai', label: 'AI Matching' },
+  { href: '#ai', label: 'Matching' },
   { href: '#stories', label: 'Stories' },
   { href: '#pricing', label: 'Pricing' },
 ];
@@ -17,9 +18,11 @@ const NAV_LINKS = [
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isSignedIn, isLoaded } = useUser();
+  const user = useCurrentUser();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    setIsLoaded(true);
     const handler = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
@@ -35,7 +38,7 @@ export default function LandingNav() {
         style={{
           background: scrolled ? 'rgba(3,3,17,0.85)' : 'transparent',
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(139,92,246,0.15)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(124,58,237,0.15)' : 'none',
         }}
       >
         <div className="section-container">
@@ -43,16 +46,15 @@ export default function LandingNav() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 overflow-hidden"
               >
-                <Heart className="w-5 h-5 text-white fill-white" />
+                <Image src="/logo.png" alt="VOLVERO Logo" width={40} height={40} className="object-cover" />
               </div>
               <div>
                 <div className="font-display font-black text-white text-sm leading-none tracking-tight">
-                  LAMAANE DOORE
+                  VOLVERO
                 </div>
-                <div className="text-xs" style={{ color: '#a78bfa' }}>Find Your Match</div>
+                <div className="text-xs" style={{ color: '#EC4899' }}>Connect Beyond Borders</div>
               </div>
             </Link>
 
@@ -70,39 +72,27 @@ export default function LandingNav() {
               ))}
             </div>
 
-            {/* CTA — Clerk Show pattern */}
+            {/* CTA */}
             <div className="hidden md:flex items-center gap-3">
               {!isLoaded ? (
                 <div className="w-20 h-8 rounded-xl shimmer" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              ) : isSignedIn ? (
+              ) : user ? (
                 <div className="flex items-center gap-3">
                   <Link href="/discover" className="btn-primary py-2.5 px-5 text-sm">
                     Open App →
                   </Link>
-                  <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        avatarBox: 'w-9 h-9 rounded-xl',
-                      },
-                    }}
-                  />
+                  <Link href="/profile" className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-colors">
+                    <User className="w-5 h-5 text-white" />
+                  </Link>
                 </div>
               ) : (
                 <>
-                  <SignInButton mode="modal">
-                    <button
-                      className="text-sm font-medium px-4 py-2.5 rounded-xl transition-colors hover:text-white"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      Sign In
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button className="btn-primary py-2.5 px-5 text-sm">
-                      Get Started Free
-                    </button>
-                  </SignUpButton>
+                  <Link href="/sign-in" className="text-sm font-medium px-4 py-2.5 rounded-xl transition-colors hover:text-white" style={{ color: '#9ca3af' }}>
+                    Sign In
+                  </Link>
+                  <Link href="/sign-up" className="btn-primary py-2.5 px-5 text-sm">
+                    Get Started Free
+                  </Link>
                 </>
               )}
             </div>
@@ -131,7 +121,7 @@ export default function LandingNav() {
             style={{
               background: 'rgba(3,3,17,0.97)',
               backdropFilter: 'blur(20px)',
-              borderBottom: '1px solid rgba(139,92,246,0.2)',
+              borderBottom: '1px solid rgba(124,58,237,0.2)',
             }}
           >
             <div className="space-y-1">
@@ -148,18 +138,18 @@ export default function LandingNav() {
               ))}
             </div>
             <div className="mt-4 pt-4 flex flex-col gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              {isSignedIn ? (
+              {user ? (
                 <Link href="/discover" onClick={() => setMobileOpen(false)} className="btn-primary text-sm py-3 text-center">
                   Open App →
                 </Link>
               ) : (
                 <>
-                  <SignInButton mode="modal">
-                    <button className="btn-secondary text-sm py-3 w-full text-center">Sign In</button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button className="btn-primary text-sm py-3 w-full text-center">Get Started Free</button>
-                  </SignUpButton>
+                  <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="btn-secondary text-sm py-3 w-full text-center">
+                    Sign In
+                  </Link>
+                  <Link href="/sign-up" onClick={() => setMobileOpen(false)} className="btn-primary text-sm py-3 w-full text-center">
+                    Get Started Free
+                  </Link>
                 </>
               )}
             </div>

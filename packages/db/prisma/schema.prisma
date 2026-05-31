@@ -140,7 +140,7 @@ enum UserStatus {
 
 model User {
   id                String             @id @default(cuid())
-  clerkId           String             @unique
+  supabaseId        String             @unique
   email             String             @unique
   phone             String?            @unique
   
@@ -159,7 +159,6 @@ model User {
   locationUpdatedAt DateTime?
   
   // Cultural Identity
-  tribe             String?
   religion          Religion?
   
   // Personal Details
@@ -241,8 +240,10 @@ model User {
   adminLogs         AdminLog[]
   aiRecommendations AIRecommendation[] @relation("RecommendationUser")
   aiTargeted        AIRecommendation[] @relation("RecommendationTarget")
+  datesProposed     DateEvent[]        @relation("DateProposer")
+  datesReceived     DateEvent[]        @relation("DateReceiver")
 
-  @@index([clerkId])
+  @@index([supabaseId])
   @@index([email])
   @@index([latitude, longitude])
   @@index([subscriptionTier])
@@ -286,6 +287,7 @@ model Match {
   userA        User          @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
   userB        User          @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
   conversation Conversation?
+  dateEvents   DateEvent[]
 
   @@unique([userAId, userBId])
   @@index([userAId])
@@ -528,6 +530,39 @@ model PlatformStat {
   revenue     Float    @default(0)
   createdAt   DateTime @default(now())
 
-  @@index([date])
   @@map("platform_stats")
+}
+
+// ============================================================
+// SCHEDULING
+// ============================================================
+
+enum DateEventStatus {
+  PROPOSED
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  COMPLETED
+}
+
+model DateEvent {
+  id          String   @id @default(cuid())
+  matchId     String
+  proposerId  String
+  receiverId  String
+  proposedAt  DateTime
+  location    String?
+  venueName   String?
+  status      DateEventStatus @default(PROPOSED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  match    Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  proposer User  @relation("DateProposer", fields: [proposerId], references: [id], onDelete: Cascade)
+  receiver User  @relation("DateReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([proposerId])
+  @@index([receiverId])
+  @@map("date_events")
 }

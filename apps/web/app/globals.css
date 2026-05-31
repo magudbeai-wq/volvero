@@ -1,42 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================================
-   CSS Custom Properties — Design Tokens
+   CSS Custom Properties — VOLVERO Design Tokens
    ============================================================ */
 :root {
   /* Brand Colors */
-  --color-brand:       #8b5cf6;
-  --color-brand-light: #a78bfa;
-  --color-brand-dark:  #7c3aed;
-  --color-gold:        #fbbf24;
+  --color-brand:       #7C3AED; /* Electric Purple — Primary */
+  --color-brand-light: #9333EA; /* Deep Violet — Secondary */
+  --color-brand-dark:  #6D28D9;
+  --color-accent:      #EC4899; /* Neon Pink — Accent */
+  --color-gold:        #FBBF24; /* Premium Gold */
   --color-gold-dark:   #d97706;
 
   /* Dark Mode Backgrounds */
-  --bg-primary:        #030311;
-  --bg-secondary:      #0a0a1f;
-  --bg-tertiary:       #111128;
-  --bg-elevated:       #161630;
-  --bg-card:           rgba(22, 22, 48, 0.8);
+  --bg-primary:        #0B1020; /* Midnight Black */
+  --bg-secondary:      #131A2B; /* Dark Glass */
+  --bg-tertiary:       #1a2238;
+  --bg-elevated:       #1f2b45;
+  --bg-card:           rgba(19, 26, 43, 0.8);
 
   /* Borders */
-  --border-subtle:     rgba(139, 92, 246, 0.15);
-  --border-default:    rgba(139, 92, 246, 0.25);
-  --border-strong:     rgba(139, 92, 246, 0.4);
+  --border-subtle:     rgba(124, 58, 237, 0.15);
+  --border-default:    rgba(124, 58, 237, 0.25);
+  --border-strong:     rgba(124, 58, 237, 0.4);
 
   /* Glass Effect */
-  --glass-bg:          rgba(22, 22, 48, 0.6);
+  --glass-bg:          rgba(11, 16, 32, 0.6);
   --glass-border:      rgba(255, 255, 255, 0.08);
   --glass-blur:        20px;
 
   /* Text */
-  --text-primary:      #f3f4f6;
-  --text-secondary:    #9ca3af;
-  --text-muted:        #6b7280;
-  --text-brand:        #a78bfa;
+  --text-primary:      #FFFFFF;
+  --text-secondary:    #cbd5e1;
+  --text-muted:        #94A3B8;
+  --text-brand:        #7C3AED;
 
   /* Spacing */
   --nav-height:        72px;
@@ -59,8 +60,8 @@
   --text-primary:      #111827;
   --text-secondary:    #4b5563;
   --text-muted:        #9ca3af;
-  --border-subtle:     rgba(139, 92, 246, 0.1);
-  --border-default:    rgba(139, 92, 246, 0.2);
+  --border-subtle:     rgba(124, 58, 237, 0.1);
+  --border-default:    rgba(124, 58, 237, 0.2);
 }
 
 /* ============================================================
@@ -88,8 +89,8 @@ body {
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.3);
-  color: #f3f4f6;
+  background: rgba(236, 72, 153, 0.35);
+  color: #ffffff;
 }
 
 /* ============================================================
@@ -107,10 +108,46 @@ body {
    Typography
    ============================================================ */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Syne', 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', 'Syne', 'Inter', system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   Keyframe Animations
+   ============================================================ */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4),
+                0 0 30px rgba(124, 58, 237, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.7),
+                0 0 60px rgba(124, 58, 237, 0.3);
+  }
+}
+
+@keyframes holographic-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ============================================================
@@ -126,10 +163,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .glass-brand {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(124, 58, 237, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(124, 58, 237, 0.2);
   }
 
   .glass-gold {
@@ -139,9 +176,9 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid rgba(251, 191, 36, 0.2);
   }
 
-  /* Gradient Text */
+  /* Gradient Text — Purple → Violet → Pink */
   .gradient-text {
-    background: linear-gradient(135deg, #a78bfa, #60a5fa);
+    background: linear-gradient(135deg, #7C3AED, #9333EA, #EC4899);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -154,23 +191,31 @@ h1, h2, h3, h4, h5, h6 {
     background-clip: text;
   }
 
+  /* Gradient Text — Pink → Purple */
+  .gradient-text-pink {
+    background: linear-gradient(135deg, #EC4899, #7C3AED);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   /* Gradient Borders */
   .border-brand-gradient {
     border: 1px solid transparent;
     background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
-                linear-gradient(135deg, #7c3aed, #2563eb) border-box;
+                linear-gradient(135deg, #7C3AED, #9333EA, #EC4899) border-box;
   }
 
   /* Buttons */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-semibold text-white transition-all duration-200;
-    background: linear-gradient(135deg, #7c3aed, #2563eb);
-    box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4);
+    background: linear-gradient(135deg, #7C3AED, #9333EA, #EC4899);
+    box-shadow: 0 4px 24px rgba(236, 72, 153, 0.4);
   }
 
   .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 8px 32px rgba(236, 72, 153, 0.55);
   }
 
   .btn-primary:active {
@@ -187,18 +232,18 @@ h1, h2, h3, h4, h5, h6 {
 
   .btn-secondary:hover {
     border-color: var(--color-brand);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.25);
   }
 
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-semibold text-black transition-all duration-200;
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    background: linear-gradient(135deg, #9333EA, #FBBF24);
     box-shadow: 0 4px 24px rgba(251, 191, 36, 0.4);
   }
 
   .btn-gold:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 32px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 8px 32px rgba(251, 191, 36, 0.55);
   }
 
   /* Cards */
@@ -216,7 +261,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .card-hover:hover {
     border-color: var(--border-default);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 30px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(124, 58, 237, 0.12);
     transform: translateY(-2px);
   }
 
@@ -234,19 +279,19 @@ h1, h2, h3, h4, h5, h6 {
 
   .input-field:focus {
     border-color: var(--color-brand);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
   }
 
   /* Badges */
   .badge-verified {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
-    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    background: linear-gradient(135deg, #7C3AED, #9333EA);
     color: white;
   }
 
   .badge-premium {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
-    background: linear-gradient(135deg, #d97706, #fbbf24);
+    background: linear-gradient(135deg, #9333EA, #FBBF24);
     color: black;
   }
 
@@ -281,7 +326,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .nav-item.active {
     color: var(--color-brand);
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(124, 58, 237, 0.12);
   }
 
   .nav-item:hover:not(.active) {
@@ -298,7 +343,53 @@ h1, h2, h3, h4, h5, h6 {
   .avatar-ring {
     @apply rounded-full ring-2;
     ring-color: var(--color-brand);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+  }
+
+  /* ============================================================
+     NEW — Glow Utilities
+     ============================================================ */
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.45),
+                0 0 60px rgba(124, 58, 237, 0.2);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.45),
+                0 0 60px rgba(236, 72, 153, 0.2);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.45),
+                0 0 60px rgba(251, 191, 36, 0.2);
+  }
+
+  /* ============================================================
+     NEW — Motion Utilities
+     ============================================================ */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  /* ============================================================
+     NEW — Holographic Shimmer
+     ============================================================ */
+  .holographic {
+    background: linear-gradient(
+      135deg,
+      #7C3AED 0%,
+      #9333EA 20%,
+      #EC4899 40%,
+      #FBBF24 60%,
+      #9333EA 80%,
+      #7C3AED 100%
+    );
+    background-size: 300% 300%;
+    animation: holographic-shimmer 6s ease infinite;
   }
 }
 
@@ -367,12 +458,6 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 2px;
 }
 
-/* ============================================================
-   Custom RTL support for Arabic
-   ============================================================ */
-[dir="rtl"] {
-  text-align: right;
-}
 
 /* ============================================================
    Media Queries

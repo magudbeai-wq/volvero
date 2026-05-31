@@ -132,7 +132,7 @@ router.post('/checkout', requireAuth, async (req: AuthRequest, res) => {
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.fullName,
-        metadata: { userId: user.id, clerkId: user.clerkId },
+        metadata: { userId: user.id, supabaseId: user.supabaseId },
       });
       customerId = customer.id;
 

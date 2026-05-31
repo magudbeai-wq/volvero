@@ -147,9 +147,9 @@ router.post('/clerk', async (req, res) => {
   const { type, data } = evt;
 
   if (type === 'user.deleted') {
-    const clerkId = data.id as string;
+    const supabaseId = data.id as string;
     await prisma.user.updateMany({
-      where: { clerkId },
+      where: { supabaseId },
       data: { status: 'DEACTIVATED', deletedAt: new Date() },
     });
   }

@@ -1,13 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, Twitter, Instagram, Facebook, Youtube } from 'lucide-react';
+import { Twitter, Instagram, Facebook, Youtube } from 'lucide-react';
+import Image from 'next/image';
 
 const FOOTER_LINKS = {
-  Product: ['Features', 'How It Works', 'Pricing', 'AI Matching', 'Safety'],
-  Community: ['Success Stories', 'Blog', 'Events', 'Referral Program', 'Ambassadors'],
-  Support: ['Help Center', 'Contact Us', 'Report a Problem', 'Community Guidelines'],
-  Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR', 'Accessibility'],
+  Product: [
+    { label: 'Features', href: '#features' },
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'Matching', href: '#ai' }
+  ],
+  Community: [
+    { label: 'Blog', href: '/blog' },
+    { label: 'Success Stories', href: '/blog' }
+  ],
+  Legal: [
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' }
+  ]
 };
 
 export default function Footer() {
@@ -15,8 +26,8 @@ export default function Footer() {
     <footer
       className="relative pt-20 pb-10"
       style={{
-        background: 'rgba(3,3,17,0.98)',
-        borderTop: '1px solid rgba(139,92,246,0.15)',
+        background: '#0B1020',
+        borderTop: '1px solid rgba(124,58,237,0.15)',
       }}
     >
       <div className="section-container">
@@ -25,22 +36,17 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
               >
-                <Heart className="w-5 h-5 text-white fill-white" />
+                <Image src="/logo.png" alt="VOLVERO Logo" width={40} height={40} className="object-cover" />
               </div>
               <div>
-                <div className="font-display font-black text-white text-base">LAMAANE DOORE</div>
-                <div className="text-xs" style={{ color: '#a78bfa' }}>Find Your Perfect Somali Match</div>
+                <div className="font-display font-black text-white text-base">VOLVERO</div>
+                <div className="text-xs" style={{ color: '#a78bfa' }}>Connect Beyond Borders</div>
               </div>
             </Link>
             <p className="text-sm leading-relaxed mb-6" style={{ color: '#6b7280' }}>
-              The world's most premium Somali dating and matchmaking platform. Built with love
-              for the global Somali community. 🇸🇴
-            </p>
-            <p className="text-sm italic mb-6" dir="rtl" style={{ color: '#6b7280' }}>
-              منصة المواعدة الصومالية الأكثر فخامة في العالم
+              The world's most premium dating platform. Find meaningful connections anywhere in the world. 🌍
             </p>
 
             {/* Social */}
@@ -64,14 +70,14 @@ export default function Footer() {
               <h4 className="font-semibold text-white mb-4 text-sm">{category}</h4>
               <ul className="space-y-2.5">
                 {links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
                       className="text-sm transition-colors hover:text-white"
                       style={{ color: '#6b7280' }}
                     >
-                      {link}
-                    </a>
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -85,7 +91,7 @@ export default function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="text-sm" style={{ color: '#4b5563' }}>
-            © 2024 LAMAANE DOORE. All rights reserved. Made with 💜 for the Somali community.
+            © 2025 VOLVERO. All rights reserved. Made with 💜 for dreamers worldwide.
           </div>
           <div className="flex items-center gap-6">
             <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}>

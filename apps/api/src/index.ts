@@ -20,6 +20,7 @@ import uploadRouter from './routes/upload.js';
 import aiRouter from './routes/ai.js';
 import notificationsRouter from './routes/notifications.js';
 import webhooksRouter from './routes/webhooks.js';
+import datesRouter from './routes/dates.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -72,7 +73,7 @@ app.use(morgan('combined', {
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
-    service: 'LAMAANE DOORE API',
+    service: 'Velora API',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
@@ -81,7 +82,7 @@ app.get('/health', (_req, res) => {
 app.get('/', (_req, res) => {
   res.json({
     status: 'ok',
-    message: 'Welcome to the LAMAANE DOORE API!',
+    message: 'Welcome to the Velora API!',
     docs: 'Endpoints are mounted at /api'
   });
 });
@@ -96,6 +97,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/notifications', notificationsRouter);
+app.use('/api/dates', datesRouter);
 
 // ── Error Handling ───────────────────────────────────────────
 app.use(notFound);
@@ -108,7 +110,7 @@ initSocket(httpServer);
 const PORT = Number(process.env.PORT) || 3001;
 
 httpServer.listen(PORT, () => {
-  logger.info(`🚀 LAMAANE DOORE API running on port ${PORT}`);
+  logger.info(`🚀 Velora API running on port ${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
   logger.info(`🌐 CORS Origin: ${process.env.SOCKET_CORS_ORIGIN}`);
 });

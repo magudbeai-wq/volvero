@@ -18,7 +18,7 @@ export default function CTASection() {
           transition={{ duration: 0.8 }}
           className="relative rounded-4xl p-12 sm:p-20 text-center overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, rgba(124,58,237,0.4) 0%, rgba(37,99,235,0.3) 100%)',
+            background: 'linear-gradient(135deg, rgba(124,58,237,0.4) 0%, rgba(236,72,153,0.3) 100%)',
             border: '1px solid rgba(139,92,246,0.4)',
           }}
         >
@@ -31,13 +31,12 @@ export default function CTASection() {
           <div className="relative z-10">
             <div className="text-5xl mb-6">💜</div>
             <h2 className="font-display text-4xl sm:text-6xl font-black mb-6 text-white leading-tight">
-              Your Perfect Match
+              Your Story Starts Here
               <br />
-              <span className="gradient-text">Is Waiting</span>
+              <span className="gradient-text">On VOLVERO</span>
             </h2>
             <p className="text-xl mb-10 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              Join 50,000+ Somali singles already finding love on LAMAANE DOORE.
-              Start free today — no credit card required.
+              Join millions finding meaningful connections worldwide on VOLVERO. Start free today — no credit card required.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

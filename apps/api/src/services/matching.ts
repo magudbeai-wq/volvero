@@ -13,7 +13,7 @@ import type { User } from '@prisma/client';
 type ScoringUser = Pick<User,
   | 'religion' | 'relationshipGoal' | 'interests' | 'personalityTraits'
   | 'lifestylePrefs' | 'latitude' | 'longitude' | 'lastSeenAt'
-  | 'profileCompletion' | 'isVerified' | 'matchCount' | 'tribe'
+  | 'profileCompletion' | 'isVerified' | 'matchCount'
   | 'maritalStatus' | 'educationLevel'
 >;
 

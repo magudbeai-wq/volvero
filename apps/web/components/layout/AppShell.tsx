@@ -42,7 +42,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Heart className="w-5 h-5 text-white fill-white" />
           </div>
           <div>
-            <div className="font-display font-black text-white text-sm leading-tight">LAMAANE DOORE</div>
+            <div className="font-display font-black text-white text-sm leading-tight">VOLVERO</div>
             <div className="text-xs" style={{ color: '#6b7280' }}>Find Your Match</div>
           </div>
         </Link>

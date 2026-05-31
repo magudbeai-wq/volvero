@@ -76,7 +76,6 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
         bio: true,
         city: true,
         country: true,
-        tribe: true,
         religion: true,
         educationLevel: true,
         career: true,
