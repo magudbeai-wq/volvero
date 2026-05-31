@@ -110,6 +110,50 @@ router.post('/stripe', async (req, res) => {
         break;
       }
 
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.type === 'COIN_PURCHASE') {
+          const userId = session.metadata.userId;
+          const coins = Number(session.metadata.coins);
+          
+          if (userId && !isNaN(coins)) {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { coinBalance: { increment: coins } },
+            });
+            
+            await prisma.coinTransaction.create({
+              data: {
+                userId,
+                amount: coins,
+                type: 'PURCHASE',
+                referenceId: session.id,
+              }
+            });
+            logger.info({ userId, coins }, 'Coins credited via Stripe webhook');
+          }
+        } else if (session.metadata?.type === 'SUBSCRIPTION_DUMMY') {
+          // Handle dummy local test subscriptions
+          const userId = session.metadata.userId;
+          const plan = session.metadata.plan;
+          if (userId && plan) {
+             const tier = plan === 'vip' ? 'GOLD' : 'PREMIUM';
+             await prisma.user.update({
+               where: { id: userId },
+               data: { subscriptionTier: tier }
+             });
+             // Also upsert subscription record
+             await prisma.subscription.upsert({
+               where: { userId },
+               update: { tier, status: 'ACTIVE' },
+               create: { userId, stripeCustomerId: `cust_dummy_${userId}`, tier, status: 'ACTIVE' }
+             });
+             logger.info({ userId, tier }, 'Dummy Subscription credited via Stripe webhook');
+          }
+        }
+        break;
+      }
+
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         logger.warn({ invoiceId: invoice.id }, 'Payment failed');

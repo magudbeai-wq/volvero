@@ -1,95 +1,39 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
-import {
-  uploadProfilePhoto,
-  uploadStoryMedia,
-  uploadChatMedia,
-  generateSignedUploadParams,
-} from '../services/cloudinary.js';
-import { prisma } from '../lib/prisma.js';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
 
 const router = Router();
 
-// Use memory storage for multer (buffer → Cloudinary)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-  fileFilter: (_, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'video/mp4'];
-    cb(null, allowed.includes(file.mimetype));
-  },
+// Configure cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-function bufferToBase64(buffer: Buffer, mimetype: string): string {
-  return `data:${mimetype};base64,${buffer.toString('base64')}`;
-}
+const upload = multer({ dest: 'tmp/' });
 
-// ── POST /api/upload/photo ────────────────────────────────────
-router.post('/photo', requireAuth, upload.single('photo'), async (req: AuthRequest, res) => {
+// ── POST /api/upload/audio ──────────────────────────────────────
+router.post('/audio', requireAuth, upload.single('audio'), async (req: AuthRequest, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file provided' });
-
-    const base64 = bufferToBase64(req.file.buffer, req.file.mimetype);
-    const result = await uploadProfilePhoto(base64, req.userId!);
-
-    // Save to user photos array
-    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
-    if (user) {
-      const photos = user.photos.includes(result.url)
-        ? user.photos
-        : [...user.photos, result.url].slice(0, 9);
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          photos,
-          profilePhoto: user.profilePhoto || result.url,
-        },
-      });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file provided' });
     }
 
-    res.json({ url: result.url, publicId: result.publicId });
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'video', // Cloudinary treats audio as video resource type
+      folder: 'volvero_voice_messages',
+    });
+
+    // Cleanup temp file
+    fs.unlinkSync(req.file.path);
+
+    res.json({ url: result.secure_url });
   } catch (error) {
-    console.error('Photo upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
+    res.status(500).json({ error: 'Failed to upload audio' });
   }
-});
-
-// ── POST /api/upload/story ────────────────────────────────────
-router.post('/story', requireAuth, upload.single('media'), async (req: AuthRequest, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file provided' });
-
-    const base64 = bufferToBase64(req.file.buffer, req.file.mimetype);
-    const result = await uploadStoryMedia(base64, req.userId!);
-
-    res.json({ url: result.url, publicId: result.publicId });
-  } catch (error) {
-    res.status(500).json({ error: 'Story upload failed' });
-  }
-});
-
-// ── POST /api/upload/chat ─────────────────────────────────────
-router.post('/chat/:conversationId', requireAuth, upload.single('media'), async (req: AuthRequest, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file provided' });
-
-    const base64 = bufferToBase64(req.file.buffer, req.file.mimetype);
-    const result = await uploadChatMedia(base64, req.params.conversationId as string);
-
-    res.json({ url: result.url, publicId: result.publicId });
-  } catch (error) {
-    res.status(500).json({ error: 'Chat media upload failed' });
-  }
-});
-
-// ── GET /api/upload/sign ──────────────────────────────────────
-// Returns signed params for direct browser-to-Cloudinary uploads
-router.get('/sign', requireAuth, (req: AuthRequest, res) => {
-  const folder = (req.query.folder as string) || 'profiles';
-  const params = generateSignedUploadParams(req.userId!, folder);
-  res.json(params);
 });
 
 export default router;

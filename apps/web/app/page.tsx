@@ -9,6 +9,7 @@ import FeaturesSection from '@/components/landing/FeaturesSection';
 import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import AISection from '@/components/landing/AISection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import SafetySection from '@/components/landing/SafetySection';
 import PricingSection from '@/components/landing/PricingSection';
 import StatsSection from '@/components/landing/StatsSection';
 import FAQSection from '@/components/landing/FAQSection';
@@ -38,10 +39,11 @@ export default function LandingPage() {
       <LandingNav />
       <HeroSection />
       <StatsSection />
-      <FeaturesSection />
       <HowItWorksSection />
+      <FeaturesSection />
       <AISection />
       <TestimonialsSection />
+      <SafetySection />
       <PricingSection />
       <FAQSection />
       <CTASection />

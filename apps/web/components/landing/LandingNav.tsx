@@ -1,161 +1,121 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, User } from 'lucide-react';
-import { useCurrentUser } from '@/lib/hooks/useAuth';
-import Image from 'next/image';
-
-const NAV_LINKS = [
-  { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How it Works' },
-  { href: '#ai', label: 'Matching' },
-  { href: '#stories', label: 'Stories' },
-  { href: '#pricing', label: 'Pricing' },
-];
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Heart, Menu, X } from "lucide-react";
 
 export default function LandingNav() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const user = useCurrentUser();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoaded(true);
-    const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { name: "Discover", href: "#discover" },
+    { name: "Features", href: "#features" },
+    { name: "Safety", href: "#safety" },
+    { name: "Success Stories", href: "#stories" },
+    { name: "Pricing", href: "#pricing" },
+  ];
+
   return (
-    <>
-      <motion.nav
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-        style={{
-          background: scrolled ? 'rgba(3,3,17,0.85)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(124,58,237,0.15)' : 'none',
-        }}
-      >
-        <div className="section-container">
-          <div className="flex items-center justify-between h-18" style={{ height: '72px' }}>
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 overflow-hidden"
-              >
-                <Image src="/logo.png" alt="VOLVERO Logo" width={40} height={40} className="object-cover" />
-              </div>
-              <div>
-                <div className="font-display font-black text-white text-sm leading-none tracking-tight">
-                  VOLVERO
-                </div>
-                <div className="text-xs" style={{ color: '#EC4899' }}>Connect Beyond Borders</div>
-              </div>
-            </Link>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#131A2B]/80 backdrop-blur-md border-b border-white/10 shadow-lg py-4"
+          : "bg-transparent py-6"
+      }`}
+    >
+      <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="bg-gradient-to-tr from-[#7C3AED] to-[#EC4899] p-2 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform shadow-lg shadow-[#7C3AED]/20">
+            <Heart className="w-5 h-5 text-white fill-current" />
+          </div>
+          <span className="text-xl font-bold tracking-wider text-white">
+            VOLVERO
+          </span>
+        </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.href}
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-8">
+          <ul className="flex items-center gap-6">
+            {navLinks.map((link) => (
+              <li key={link.name}>
+                <Link
                   href={link.href}
-                  className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:text-white"
-                  style={{ color: '#9ca3af' }}
+                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                 >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              {!isLoaded ? (
-                <div className="w-20 h-8 rounded-xl shimmer" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              ) : user ? (
-                <div className="flex items-center gap-3">
-                  <Link href="/discover" className="btn-primary py-2.5 px-5 text-sm">
-                    Open App →
-                  </Link>
-                  <Link href="/profile" className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-colors">
-                    <User className="w-5 h-5 text-white" />
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <Link href="/sign-in" className="text-sm font-medium px-4 py-2.5 rounded-xl transition-colors hover:text-white" style={{ color: '#9ca3af' }}>
-                    Sign In
-                  </Link>
-                  <Link href="/sign-up" className="btn-primary py-2.5 px-5 text-sm">
-                    Get Started Free
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-xl"
-              style={{ color: '#9ca3af' }}
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-white hover:text-gray-300 transition-colors"
             >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              Login
+            </Link>
+            <Link
+              href="/signup"
+              className="text-sm font-medium text-white bg-gradient-to-r from-[#7C3AED] to-[#EC4899] px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all transform hover:-translate-y-0.5"
+            >
+              Sign Up
+            </Link>
           </div>
         </div>
-      </motion.nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-[72px] left-0 right-0 z-40 p-4"
-            style={{
-              background: 'rgba(3,3,17,0.97)',
-              backdropFilter: 'blur(20px)',
-              borderBottom: '1px solid rgba(124,58,237,0.2)',
-            }}
-          >
-            <div className="space-y-1">
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.href}
+        {/* Mobile Menu Toggle */}
+        <button
+          className="md:hidden text-white hover:text-gray-300 transition-colors"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Nav */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[#131A2B]/95 backdrop-blur-xl border-b border-white/10 py-4 px-4 shadow-xl">
+          <ul className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <li key={link.name}>
+                <Link
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:text-white"
-                  style={{ color: '#9ca3af' }}
+                  className="block text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-            <div className="mt-4 pt-4 flex flex-col gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              {user ? (
-                <Link href="/discover" onClick={() => setMobileOpen(false)} className="btn-primary text-sm py-3 text-center">
-                  Open App →
+                  {link.name}
                 </Link>
-              ) : (
-                <>
-                  <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="btn-secondary text-sm py-3 w-full text-center">
-                    Sign In
-                  </Link>
-                  <Link href="/sign-up" onClick={() => setMobileOpen(false)} className="btn-primary text-sm py-3 w-full text-center">
-                    Get Started Free
-                  </Link>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+              </li>
+            ))}
+            <li className="pt-4 border-t border-white/10 flex flex-col gap-3">
+              <Link
+                href="/login"
+                className="w-full text-center py-2.5 text-sm font-medium text-white rounded-full border border-white/20 hover:bg-white/5 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="w-full text-center py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#7C3AED] to-[#EC4899] rounded-full shadow-lg shadow-[#7C3AED]/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign Up
+              </Link>
+            </li>
+          </ul>
+        </div>
+      )}
+    </nav>
   );
 }

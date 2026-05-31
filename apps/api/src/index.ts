@@ -21,6 +21,8 @@ import aiRouter from './routes/ai.js';
 import notificationsRouter from './routes/notifications.js';
 import webhooksRouter from './routes/webhooks.js';
 import datesRouter from './routes/dates.js';
+import paymentsRouter from './routes/payments.js';
+import boostsRouter from './routes/boosts.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -98,6 +100,8 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/dates', datesRouter);
+app.use('/api/payments', paymentsRouter);
+app.use('/api/boosts', boostsRouter);
 
 // ── Error Handling ───────────────────────────────────────────
 app.use(notFound);

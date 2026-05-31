@@ -1,215 +1,250 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { Check, Zap } from 'lucide-react';
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Check, Star, Zap, Crown, Coins } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api/client';
+import { loadStripe } from '@stripe/stripe-js';
+import toast from 'react-hot-toast';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY || '');
 
 const PLANS = [
   {
-    id: 'free',
-    name: 'Free',
-    monthlyPrice: 0,
-    annualPrice: 0,
-    description: 'Get started and explore the platform',
+    id: 'coins',
+    name: 'Coins',
+    badge: 'Pay as you go',
+    icon: Coins,
+    price: 'From $4.99',
+    period: '',
+    description: 'Perfect for occasional interactions',
     features: [
-      '50 likes per day',
-      'Basic profile',
-      'View matches',
-      'Limited messaging',
-      'Basic filters',
+      'Voice Calls',
+      'Virtual Gifts',
+      'Profile Boosts',
     ],
-    notIncluded: ['See who liked you', 'Rewind swipes', 'Smart icebreakers', 'Incognito mode'],
-    cta: 'Get Started Free',
-    ctaHref: '/sign-up',
+    cta: 'Buy Coins',
+    ctaHref: '/buy-coins',
     popular: false,
-    color: '#6b7280',
+    color: '#7C3AED',
+    glowColor: 'rgba(124,58,237,0.15)',
+    borderStyle: 'border-[#7C3AED]/20 hover:border-[#7C3AED]/40',
+    bgStyle: 'bg-[#131A2B]/80',
   },
   {
     id: 'premium',
     name: 'Premium',
-    monthlyPrice: 19.99,
-    annualPrice: 12.49,
+    badge: 'Subscription',
+    icon: Zap,
+    price: '$9.99',
+    period: '/month',
     description: 'The ultimate matching experience',
     features: [
-      'Unlimited likes',
+      'Unlimited Likes',
       'See who liked you',
-      'Rewind last swipe',
-      '1 Boost per month',
-      'Advanced filters',
-      'Smart icebreakers',
-      'Smart bio generator',
-      'Incognito mode',
-      'Read receipts',
-      'Priority ranking',
-      'Verified badge priority',
+      'Read receipts'
     ],
     popular: true,
     cta: 'Start Premium',
     ctaHref: '/premium',
-    color: '#8b5cf6',
-    priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY,
+    color: '#EC4899',
+    glowColor: 'rgba(236,72,153,0.25)',
+    borderStyle: 'border-[#EC4899]/40 hover:border-[#EC4899]/60',
+    bgStyle: 'bg-gradient-to-b from-[#131A2B] to-[#1a1025]',
   },
   {
-    id: 'gold',
-    name: 'Gold',
-    monthlyPrice: 34.99,
-    annualPrice: 24.99,
-    description: 'VIP experience with maximum features',
+    id: 'vip',
+    name: 'VIP',
+    badge: 'Ultimate',
+    icon: Crown,
+    price: '$19.99',
+    period: '/month',
+    description: 'Maximum features & ultimate status',
     features: [
-      'Everything in Premium',
-      'Passport mode (any city)',
-      '5 Boosts per month',
-      'Priority support 24/7',
-      'Early access to features',
-      'VIP badge',
-      'Unlimited rewinds',
-      'Profile analytics',
-      'Match insights',
+      'All Premium features',
+      '5 Free Boosts/month',
+      'Priority matching',
+      'Exclusive VIP badge'
     ],
     popular: false,
-    cta: 'Go Gold',
-    ctaHref: '/premium?plan=gold',
-    color: '#fbbf24',
+    cta: 'Go VIP',
+    ctaHref: '/vip',
+    color: '#FBBF24',
+    glowColor: 'rgba(251,191,36,0.25)',
+    borderStyle: 'border-[#FBBF24]/50 hover:border-[#FBBF24]/70',
+    bgStyle: 'bg-gradient-to-br from-[#131A2B] via-[#EC4899]/10 to-[#FBBF24]/10',
   },
 ];
 
 export default function PricingSection() {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const [isAnnual, setIsAnnual] = useState(true);
+  const router = useRouter();
+
+  const handleCheckout = async (planId: string) => {
+    try {
+      if (planId === 'coins') {
+        // Redirect to profile wallet or buy-coins directly
+        router.push('/messages'); // Ideally opens the wallet, but let's go to app
+        toast.success('Open your Wallet inside the app to buy coins!');
+        return;
+      }
+
+      const toastId = toast.loading('Initiating secure checkout...');
+      const res = await api.post('/api/payments/create-subscription-checkout', { planId });
+      const { sessionId } = res.data;
+      
+      const stripe = await stripePromise;
+      if (stripe && sessionId) {
+        toast.dismiss(toastId);
+        await stripe.redirectToCheckout({ sessionId });
+      } else {
+        throw new Error("Stripe failed to load");
+      }
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        toast.error('Please sign in to subscribe!');
+        router.push('/sign-in');
+      } else {
+        toast.error('Checkout failed. Please try again later.');
+      }
+    }
+  };
 
   return (
-    <section id="pricing" ref={ref} className="py-28 relative">
-      <div className="section-container">
+    <section id="pricing" ref={ref} className="py-28 relative overflow-hidden bg-[#0B1020]">
+      {/* Abstract Background Blurs */}
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-[#7C3AED]/20 rounded-full blur-[128px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#EC4899]/15 rounded-full blur-[128px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FBBF24]/5 rounded-full blur-[128px] pointer-events-none" />
+
+      <div className="container mx-auto px-6 max-w-6xl relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          className="text-center mb-16"
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
         >
           <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6"
-            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6 border border-[#7C3AED]/30 bg-[#7C3AED]/10 text-[#7C3AED]"
           >
-            PRICING
+            <Star className="w-3.5 h-3.5" />
+            UNLOCK MORE
           </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-black mb-4 text-white">
-            Simple, Transparent
-            <br />
-            <span className="gradient-text">Pricing</span>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 text-white tracking-tight">
+            Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#EC4899]">Journey</span>
           </h2>
-          <p className="text-lg mb-8" style={{ color: '#9ca3af' }}>
-            Start free. Upgrade when you're ready.
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Whether you want to pay as you go or unlock everything, we have the perfect plan to boost your matches.
           </p>
-
-          {/* Toggle */}
-          <div className="inline-flex items-center gap-3 p-1 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <button
-              onClick={() => setIsAnnual(false)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${!isAnnual ? 'bg-brand-600 text-white' : 'text-gray-400 hover:text-white'}`}
-              style={!isAnnual ? { background: '#7c3aed' } : {}}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIsAnnual(true)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${isAnnual ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              style={isAnnual ? { background: '#7c3aed' } : {}}
-            >
-              Annual
-              <span className="text-xs rounded-full px-2 py-0.5" style={{ background: 'rgba(251,191,36,0.2)', color: '#fbbf24' }}>
-                Save 37%
-              </span>
-            </button>
-          </div>
         </motion.div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {PLANS.map((plan, i) => (
-            <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: i * 0.12 }}
-              className={`relative rounded-4xl p-8 ${plan.popular ? 'scale-105' : ''}`}
-              style={{
-                background: plan.popular
-                  ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(37,99,235,0.2))'
-                  : 'rgba(22,22,48,0.8)',
-                border: `1px solid ${plan.popular ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                backdropFilter: 'blur(20px)',
-                boxShadow: plan.popular ? '0 0 60px rgba(139,92,246,0.2)' : 'none',
-              }}
-            >
-              {plan.popular && (
-                <div
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}
-                >
-                  <Zap className="w-3 h-3" />
-                  MOST POPULAR
-                </div>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          {PLANS.map((plan, i) => {
+            const Icon = plan.icon;
+            return (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 40 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+                className={`relative rounded-3xl p-8 backdrop-blur-xl border ${plan.borderStyle} ${plan.bgStyle} transition-all duration-500 hover:-translate-y-2 flex flex-col`}
+                style={{
+                  boxShadow: `0 10px 40px ${plan.glowColor}`,
+                }}
+              >
+                {/* VIP specific gradient overlay */}
+                {plan.id === 'vip' && (
+                  <div className="absolute inset-0 rounded-3xl opacity-20 bg-gradient-to-br from-[#FBBF24] to-[#EC4899] pointer-events-none" />
+                )}
 
-              <div className="mb-6">
-                <h3 className="font-display font-bold text-xl text-white mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mt-4">
-                  <span className="text-4xl font-black text-white">
-                    ${isAnnual ? plan.annualPrice : plan.monthlyPrice}
-                  </span>
-                  {plan.monthlyPrice > 0 && (
-                    <span style={{ color: '#6b7280' }}>/month</span>
-                  )}
-                </div>
-                {isAnnual && plan.monthlyPrice > 0 && (
-                  <div className="text-xs mt-1" style={{ color: '#9ca3af' }}>
-                    Billed annually (${(isAnnual ? plan.annualPrice : plan.monthlyPrice) * 12}/year)
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1.5 bg-gradient-to-r from-[#EC4899] to-[#7C3AED] shadow-lg shadow-[#EC4899]/30">
+                    <Zap className="w-3.5 h-3.5 fill-current" />
+                    MOST POPULAR
                   </div>
                 )}
-                <p className="text-sm mt-3" style={{ color: '#9ca3af' }}>{plan.description}</p>
-              </div>
-
-              <Link
-                href={plan.ctaHref}
-                className={`w-full mb-8 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all`}
-                style={plan.popular
-                  ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white', boxShadow: '0 4px 24px rgba(124,58,237,0.4)' }
-                  : plan.id === 'gold'
-                  ? { background: 'linear-gradient(135deg, #d97706, #fbbf24)', color: 'black' }
-                  : { background: 'rgba(255,255,255,0.08)', color: 'white', border: '1px solid rgba(255,255,255,0.15)' }
-                }
-              >
-                {plan.cta}
-              </Link>
-
-              <div className="space-y-3">
-                {plan.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-3 text-sm">
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${plan.color}25` }}
-                    >
-                      <Check className="w-3 h-3" style={{ color: plan.color }} />
-                    </div>
-                    <span style={{ color: '#d1d5db' }}>{feature}</span>
+                
+                {plan.id === 'vip' && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-gray-900 flex items-center gap-1.5 bg-gradient-to-r from-[#FBBF24] to-[#fde68a] shadow-lg shadow-[#FBBF24]/40">
+                    <Crown className="w-3.5 h-3.5 fill-current" />
+                    ULTIMATE
                   </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+                )}
+
+                <div className="relative z-10 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="font-bold text-2xl text-white mb-1">{plan.name}</h3>
+                      <p className="text-[#a1a1aa] text-sm font-medium">{plan.badge}</p>
+                    </div>
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10"
+                      style={{ color: plan.color, boxShadow: `0 0 20px ${plan.glowColor}` }}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <div className="mb-6 pb-6 border-b border-white/10">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-black text-white">
+                        {plan.price}
+                      </span>
+                      {plan.period && (
+                        <span className="text-gray-400 font-medium">{plan.period}</span>
+                      )}
+                    </div>
+                    <p className="text-sm mt-3 text-gray-400">{plan.description}</p>
+                  </div>
+
+                  <ul className="space-y-4 mb-8 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
+                        <div 
+                          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                          style={{ background: `${plan.color}20` }}
+                        >
+                          <Check className="w-3 h-3" style={{ color: plan.color }} />
+                        </div>
+                        <span className="text-gray-200 text-sm leading-tight">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    onClick={() => handleCheckout(plan.id)}
+                    className="group relative w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all overflow-hidden mt-auto"
+                    style={
+                      plan.id === 'vip'
+                        ? { background: 'linear-gradient(to right, #FBBF24, #EC4899)', color: '#fff' }
+                        : plan.id === 'premium'
+                        ? { background: '#EC4899', color: '#fff' }
+                        : { background: 'rgba(124,58,237,0.1)', color: '#fff', border: '1px solid rgba(124,58,237,0.5)' }
+                    }
+                  >
+                    {/* Hover effect layer */}
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                    <span className="relative z-10">{plan.cta}</span>
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Money-back guarantee */}
+        {/* Footer info */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="text-center mt-12 text-sm"
-          style={{ color: '#6b7280' }}
+          className="text-center mt-16 text-sm text-gray-500 font-medium"
         >
-          🔒 7-day money-back guarantee · Cancel anytime · Secure payment via Stripe
+          Payments are securely processed. Cancel subscriptions anytime.
         </motion.p>
       </div>
     </section>

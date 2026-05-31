@@ -1,109 +1,104 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { UserPlus, Sparkles, MessageCircleHeart, Globe } from 'lucide-react';
 
-const STEPS = [
+const steps = [
   {
-    step: '01',
+    icon: UserPlus,
     title: 'Create Your Profile',
-    description: 'Sign up with email or phone. Build your rich dating profile with photos, voice intro, and personality details.',
-    icon: '✨',
-    color: '#8b5cf6',
+    description: 'Upload photos and tell your story',
+    color: 'from-violet-500 to-purple-600',
   },
   {
-    step: '02',
-    title: 'Get Verified',
-    description: 'Complete our quick selfie verification to get your blue badge. Verified profiles get 3x more matches.',
-    icon: '✅',
-    color: '#22c55e',
-  },
-  {
-    step: '03',
+    icon: Sparkles,
     title: 'Discover Matches',
-    description: 'Our smart engine curates your daily stack of compatible singles. Swipe, like, and super-like.',
-    icon: '💜',
-    color: '#3b82f6',
+    description: 'AI-powered recommendations',
+    color: 'from-purple-500 to-pink-500',
   },
   {
-    step: '04',
-    title: 'Connect & Chat',
-    description: 'When you match, start the conversation with smart icebreakers. Chat, voice call, video call — all encrypted.',
-    icon: '💬',
-    color: '#f59e0b',
+    icon: MessageCircleHeart,
+    title: 'Connect',
+    description: 'Chat, voice call, and video call',
+    color: 'from-pink-500 to-rose-500',
+  },
+  {
+    icon: Globe,
+    title: 'Build Relationships',
+    description: 'Meet people worldwide',
+    color: 'from-rose-500 to-orange-500',
   },
 ];
 
 export default function HowItWorksSection() {
-  const ref = useRef<HTMLElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
   return (
-    <section id="how-it-works" ref={ref} className="py-28 relative" style={{ background: 'rgba(139,92,246,0.03)' }}>
-      <div className="section-container">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6"
-            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
+    <section className="py-24 bg-[#0B1020] relative overflow-hidden">
+      {/* Background glowing blobs */}
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[128px] -translate-x-1/2 pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-[#EC4899]/10 rounded-full blur-[128px] translate-x-1/2 pointer-events-none" />
+
+      <div className="container mx-auto px-4 max-w-6xl relative z-10">
+        <div className="text-center mb-16">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-5xl font-bold mb-6 text-white"
           >
-            HOW IT WORKS
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-black mb-6 text-white">
-            Your Journey to Love
-            <br />
-            <span className="gradient-text">Starts in 4 Steps</span>
-          </h2>
-        </motion.div>
+            How <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#EC4899]">VOLVERO</span> Works
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+          >
+            Your journey to finding meaningful connections is just a few steps away. Experience the future of dating.
+          </motion.p>
+        </div>
 
-        {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-          {/* Connector line (desktop) */}
-          <div
-            className="hidden lg:block absolute top-16 left-[12.5%] right-[12.5%] h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, #7c3aed, #2563eb, transparent)' }}
-          />
-
-          {STEPS.map((step, i) => (
-            <motion.div
-              key={step.step}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: i * 0.15 }}
-              className="relative text-center"
-            >
-              {/* Icon circle */}
-              <div className="relative inline-flex mb-6">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-3xl relative z-10"
-                  style={{
-                    background: `rgba(${i === 0 ? '139,92,246' : i === 1 ? '34,197,94' : i === 2 ? '59,130,246' : '245,158,11'}, 0.15)`,
-                    border: `2px solid ${step.color}40`,
-                    boxShadow: `0 0 40px ${step.color}30`,
-                  }}
-                >
-                  {step.icon}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                className="relative group"
+              >
+                {/* Connecting lines for desktop */}
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-[#7C3AED]/20 to-transparent z-0" />
+                )}
+                
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="mb-6 relative">
+                    <div className="absolute inset-0 bg-gradient-to-tr opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500 rounded-full" />
+                    <div className={`w-24 h-24 rounded-2xl bg-[#131A2B] border border-gray-800 flex items-center justify-center shadow-xl group-hover:border-[#7C3AED]/50 transition-all duration-300 relative overflow-hidden group-hover:-translate-y-2`}>
+                      <div className={`absolute inset-0 bg-gradient-to-tr ${step.color} opacity-10 group-hover:opacity-20 transition-opacity duration-300`} />
+                      <Icon className="w-10 h-10 text-white relative z-10" />
+                    </div>
+                    {/* Step number badge */}
+                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gradient-to-tr from-[#7C3AED] to-[#EC4899] text-white flex items-center justify-center font-bold text-sm shadow-lg border-2 border-[#0B1020]">
+                      {index + 1}
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#EC4899] transition-colors duration-300">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-400">
+                    {step.description}
+                  </p>
                 </div>
-                {/* Step number */}
-                <div
-                  className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white"
-                  style={{ background: step.color }}
-                >
-                  {i + 1}
-                </div>
-              </div>
-
-              <h3 className="font-display font-bold text-lg mb-2 text-white">{step.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#9ca3af' }}>
-                {step.description}
-              </p>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -6,7 +6,10 @@ import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Users, User, Sparkles, Bell } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import StoriesBar from '@/components/stories/StoriesBar';
+import { WalletModal } from '@/components/premium/WalletModal';
 import clsx from 'clsx';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
 
 const NAV_ITEMS = [
   { href: '/discover', icon: Heart, label: 'Discover', labelSo: 'Hel' },
@@ -18,6 +21,12 @@ const NAV_ITEMS = [
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { unreadMessages, unreadNotifications } = useAppStore();
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => api.get('/api/users/me').then(r => r.data),
+  });
 
   return (
     <div
@@ -99,7 +108,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom links */}
-        <div className="space-y-1">
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsWalletOpen(true)}
+            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all border cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1))',
+              borderColor: 'rgba(251, 191, 36, 0.2)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center text-yellow-900 font-bold text-xs shadow-[0_0_10px_rgba(251,191,36,0.5)]">
+                V
+              </div>
+              <div className="text-sm font-bold text-yellow-400">My Wallet</div>
+            </div>
+            <div className="text-sm font-bold text-white">{user?.coinBalance || 0}</div>
+          </button>
+
           <Link
             href="/premium"
             className="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
@@ -119,9 +145,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <main
-        className="flex-1 lg:ml-72 pb-20 lg:pb-0 min-h-screen flex flex-col"
+        className="flex-1 lg:ml-72 pb-20 lg:pb-0 min-h-screen flex flex-col relative"
         style={{ maxWidth: '100%' }}
       >
+        {/* Mobile Header with Wallet */}
+        <div className="lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-30" style={{ background: 'rgba(10,10,31,0.95)', backdropFilter: 'blur(20px)' }}>
+          <div className="font-display font-black text-white text-xl">VOLVERO</div>
+          <button 
+            onClick={() => setIsWalletOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer"
+            style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.2)' }}
+          >
+            <div className="w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center text-yellow-900 font-bold text-[8px]">V</div>
+            <span className="text-xs font-bold text-yellow-400">{user?.coinBalance || 0}</span>
+          </button>
+        </div>
+
         {/* Render StoriesBar only on discover and messages feeds */}
         {(pathname === '/discover' || pathname === '/messages') && (
           <div className="flex-shrink-0 border-b border-white/5 bg-[rgba(10,10,31,0.25)]">
@@ -189,6 +228,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </div>
       </nav>
+
+      <WalletModal isOpen={isWalletOpen} onClose={() => setIsWalletOpen(false)} />
     </div>
   );
 }

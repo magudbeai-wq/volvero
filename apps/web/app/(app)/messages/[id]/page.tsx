@@ -16,11 +16,13 @@ import { useAppStore } from '@/lib/store/appStore';
 import { useSocket } from '@/lib/hooks/useSocket';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
+import { VideoCallModal } from '@/components/chat/VideoCallModal';
 
 interface Message {
   id: string;
   senderId: string;
   content?: string;
+  mediaUrl?: string;
   type: string;
   isRead: boolean;
   createdAt: string;
@@ -54,6 +56,7 @@ export default function ChatWindow() {
   const [showIcebreakerBtn, setShowIcebreakerBtn] = useState(true);
   const [showSafetyMenu, setShowSafetyMenu] = useState(false);
   const [safetyStep, setSafetyStep] = useState<'menu' | 'report'>('menu');
+  const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coachSuggestion, setCoachSuggestion] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,6 +64,83 @@ export default function ChatWindow() {
   const typingTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const { user } = useAppStore();
   const queryClient = useQueryClient();
+
+  // Voice recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Upload audio to server
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'voice-message.webm');
+        
+        const toastId = toast.loading('Sending voice message...');
+        try {
+          const uploadRes = await api.post('/api/upload/audio', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          const audioUrl = uploadRes.data.url;
+          
+          // Send message
+          const newMsg = await api.post(`/api/messages/${conversationId}`, {
+            content: '🎵 Voice Message',
+            type: 'VOICE',
+            mediaUrl: audioUrl
+          }).then(r => r.data);
+          
+          queryClient.setQueryData(['messages', conversationId], (old: ConversationData | undefined) => {
+            if (!old) return old;
+            return { ...old, messages: [...old.messages, newMsg.message] };
+          });
+          socketSend(conversationId, newMsg.message.content, 'VOICE');
+          toast.success('Sent!', { id: toastId });
+        } catch (error) {
+          toast.error('Failed to send voice message', { id: toastId });
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      toast.error('Microphone access denied');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(recordingIntervalRef.current);
+    }
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleBlockFromChat = async () => {
     if (!otherUser) return;
@@ -279,7 +359,11 @@ export default function ChatWindow() {
           <button className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: '#9ca3af' }}>
             <Phone className="w-4.5 h-4.5" />
           </button>
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: '#9ca3af' }}>
+          <button 
+            onClick={() => setIsVideoCallOpen(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" 
+            style={{ color: '#9ca3af' }}
+          >
             <Video className="w-4.5 h-4.5" />
           </button>
           <button 
@@ -412,7 +496,14 @@ export default function ChatWindow() {
                       : { background: 'rgba(255,255,255,0.08)', color: '#f3f4f6', borderRadius: '20px 20px 20px 6px' }
                     }
                   >
-                    {msg.content}
+                    {msg.type === 'VOICE' && msg.mediaUrl ? (
+                      <div className="flex items-center gap-2">
+                        <Mic className="w-4 h-4" />
+                        <audio controls src={msg.mediaUrl} className="h-8 w-48 rounded-lg outline-none" style={{ filter: isMe ? 'invert(1)' : 'none' }} />
+                      </div>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                   <div className={`flex items-center gap-1 px-1 ${isMe ? 'flex-row-reverse' : ''}`}>
                     <span className="text-[10px]" style={{ color: '#4b5563' }}>
@@ -513,12 +604,31 @@ export default function ChatWindow() {
               {sendMutation.isPending ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
             </motion.button>
           ) : (
-            <button
-              className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5"
-              style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }}
-            >
-              <Mic className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {isRecording && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }} 
+                  animate={{ opacity: 1, scale: 1 }} 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 text-red-500 text-xs font-bold"
+                >
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  {formatRecordingTime(recordingTime)}
+                </motion.div>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={isRecording ? stopRecording : startRecording}
+                className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all shadow-lg"
+                style={{ 
+                  background: isRecording ? '#ef4444' : 'rgba(255,255,255,0.05)', 
+                  border: isRecording ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  color: isRecording ? 'white' : '#6b7280' 
+                }}
+              >
+                {isRecording ? <div className="w-4 h-4 rounded-sm bg-white" /> : <Mic className="w-5 h-5" />}
+              </motion.button>
+            </div>
           )}
         </div>
       </div>
@@ -578,6 +688,12 @@ export default function ChatWindow() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <VideoCallModal 
+        isOpen={isVideoCallOpen} 
+        onClose={() => setIsVideoCallOpen(false)} 
+        targetUser={otherUser || null}
+      />
     </div>
   );
 }

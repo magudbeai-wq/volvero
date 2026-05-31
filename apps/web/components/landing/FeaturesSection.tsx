@@ -1,126 +1,133 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Brain, Shield, MessageCircle, MapPin, Zap, Star, Heart, Eye } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { MessageSquare, Video, Phone, Coins, Flame, Star, BrainCircuit, ShieldCheck } from 'lucide-react';
 
-const FEATURES = [
+const features = [
   {
-    icon: Brain,
-    title: 'Smart Compatibility Engine',
-    description: 'Advanced algorithms analyze 40+ compatibility factors including lifestyle, goals, and personality to find your ideal match.',
-    color: '#8b5cf6',
-    glow: 'rgba(139,92,246,0.3)',
+    icon: MessageSquare,
+    title: 'Real-time Messaging',
+    description: 'Connect instantly with your matches through seamless, fast, and reliable chat.',
+    color: 'from-blue-500 to-indigo-500',
+    shadowColor: 'group-hover:shadow-blue-500/20',
   },
   {
-    icon: Shield,
-    title: 'Verified Profiles Only',
-    description: 'Every profile goes through our verification and identity check process. Blue badge = real person.',
-    color: '#22c55e',
-    glow: 'rgba(34,197,94,0.3)',
+    icon: Video,
+    title: 'Video Calls',
+    description: 'See the real person behind the profile with high-quality, secure video calling.',
+    color: 'from-pink-500 to-rose-500',
+    shadowColor: 'group-hover:shadow-pink-500/20',
   },
   {
-    icon: MessageCircle,
-    title: 'Encrypted Real-Time Chat',
-    description: 'End-to-end encrypted messaging with voice notes, reactions, GIFs, and video calling built right in.',
-    color: '#3b82f6',
-    glow: 'rgba(59,130,246,0.3)',
+    icon: Phone,
+    title: 'Voice Calls',
+    description: 'Hear their voice and build deeper connections before meeting in person.',
+    color: 'from-emerald-400 to-teal-500',
+    shadowColor: 'group-hover:shadow-emerald-500/20',
   },
   {
-    icon: MapPin,
-    title: 'Global Discovery',
-    description: 'Find singles nearby or across the globe with our location-based discovery and Passport mode.',
-    color: '#f59e0b',
-    glow: 'rgba(245,158,11,0.3)',
+    icon: Coins,
+    title: 'Coins & Gifts',
+    description: 'Show your appreciation by sending virtual gifts and earning rewards.',
+    color: 'from-amber-400 to-orange-500',
+    shadowColor: 'group-hover:shadow-amber-500/20',
   },
   {
-    icon: Zap,
-    title: 'Smart Icebreakers',
-    description: 'Our system generates personalized conversation starters based on your shared interests. Never be awkward again.',
-    color: '#ec4899',
-    glow: 'rgba(236,72,153,0.3)',
-  },
-  {
-    icon: Eye,
-    title: 'Incognito Mode',
-    description: 'Browse profiles privately. Control who sees your profile with Premium incognito mode.',
-    color: '#6366f1',
-    glow: 'rgba(99,102,241,0.3)',
+    icon: Flame,
+    title: 'Profile Boosts',
+    description: 'Stand out from the crowd and get seen by up to 10x more potential matches.',
+    color: 'from-orange-500 to-red-500',
+    shadowColor: 'group-hover:shadow-orange-500/20',
   },
   {
     icon: Star,
-    title: 'Super Like & Boost',
-    description: 'Stand out with Super Likes and Profile Boosts. Get 10x more visibility during peak hours.',
-    color: '#fbbf24',
-    glow: 'rgba(251,191,36,0.3)',
+    title: 'Premium Membership',
+    description: 'Unlock exclusive features, unlimited likes, and advanced filters.',
+    color: 'from-purple-500 to-indigo-500',
+    shadowColor: 'group-hover:shadow-purple-500/20',
   },
   {
-    icon: Heart,
-    title: 'Deep Shared Values',
-    description: 'Built with deep respect for diverse cultures and family-centered relationships globally.',
-    color: '#a78bfa',
-    glow: 'rgba(167,139,250,0.3)',
+    icon: BrainCircuit,
+    title: 'AI Matchmaking',
+    description: 'Our smart algorithm learns your preferences to suggest highly compatible profiles.',
+    color: 'from-cyan-400 to-blue-500',
+    shadowColor: 'group-hover:shadow-cyan-500/20',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Verification & Safety',
+    description: 'Your safety is our priority with strict profile verification and reporting tools.',
+    color: 'from-green-400 to-emerald-600',
+    shadowColor: 'group-hover:shadow-green-500/20',
   },
 ];
 
 export default function FeaturesSection() {
-  const ref = useRef<HTMLElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
   return (
-    <section id="features" ref={ref} className="py-28 relative">
-      <div className="section-container">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6"
-            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
-          >
-            PLATFORM FEATURES
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-black mb-6 text-white">
-            Everything You Need to Find
-            <br />
-            <span className="gradient-text">Your Perfect Match</span>
-          </h2>
-          <p className="max-w-2xl mx-auto text-lg" style={{ color: '#9ca3af' }}>
-            Built from the ground up for the global community with enterprise-grade
-            technology and breathtaking design.
-          </p>
-        </motion.div>
+    <section className="py-24 bg-[#131A2B] relative overflow-hidden border-t border-gray-800/50">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[1px] bg-gradient-to-r from-transparent via-[#7C3AED]/50 to-transparent"></div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURES.map((feature, i) => {
+      <div className="container mx-auto px-4 max-w-7xl relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7C3AED]/10 border border-[#7C3AED]/20 text-[#7C3AED] text-sm font-semibold mb-6"
+          >
+            <Star className="w-4 h-4" /> Premium Experience
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl md:text-5xl font-bold mb-6 text-white"
+          >
+            Everything you need to <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#EC4899]">Connect Meaningfully</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+          >
+            VOLVERO brings you the most advanced suite of features to ensure your online dating experience is fun, safe, and successful.
+          </motion.p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 40 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: i * 0.07 }}
-                className="group card-hover p-6 cursor-default"
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05, duration: 0.4 }}
+                className={`group relative p-6 rounded-3xl bg-[#0B1020]/50 backdrop-blur-md border border-gray-800/50 hover:border-gray-700 transition-all duration-300 hover:shadow-2xl ${feature.shadowColor}`}
               >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
-                  style={{
-                    background: `rgba(${hexToRgb(feature.color)}, 0.15)`,
-                    boxShadow: `0 0 20px ${feature.glow}`,
-                  }}
-                >
-                  <Icon className="w-6 h-6" style={{ color: feature.color }} />
+                {/* Glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl pointer-events-none" />
+                
+                <div className="relative z-10">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-gradient-to-br ${feature.color} shadow-lg relative overflow-hidden group-hover:scale-110 transition-transform duration-300`}>
+                    <div className="absolute inset-0 bg-black/20" />
+                    <Icon className="w-7 h-7 text-white relative z-10" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="font-display font-bold text-base mb-2 text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#9ca3af' }}>
-                  {feature.description}
-                </p>
               </motion.div>
             );
           })}
@@ -128,11 +135,4 @@ export default function FeaturesSection() {
       </div>
     </section>
   );
-}
-
-function hexToRgb(hex: string): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-    : '139, 92, 246';
 }

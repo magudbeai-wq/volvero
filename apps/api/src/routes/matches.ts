@@ -103,6 +103,18 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
       take: limit * 3,
     });
 
+    // Fetch active boosts for these candidates
+    const candidateIds = candidates.map((c: any) => c.id);
+    const activeBoosts = await prisma.profileBoost.findMany({
+      where: {
+        userId: { in: candidateIds },
+        isActive: true,
+        expiresAt: { gt: new Date() }
+      },
+      select: { userId: true }
+    });
+    const boostedUserIds = new Set(activeBoosts.map((b: any) => b.userId));
+
     // Score and rank candidates
     const scored = candidates
       .map((candidate: any) => {
@@ -116,7 +128,8 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
 
         return {
           ...candidate,
-          compatibility: Math.round(score * 100),
+          compatibility: Math.min(100, Math.round(score * 100) + (boostedUserIds.has(candidate.id) ? 30 : 0)),
+          isBoosted: boostedUserIds.has(candidate.id),
           distance: candidate.showDistance ? distance : null,
           latitude: undefined,
           longitude: undefined,
