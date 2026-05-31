@@ -7,7 +7,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================
@@ -108,6 +109,19 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum TransactionType {
+  PURCHASE
+  SPEND
+  REFUND
+}
+
+enum CallStatus {
+  MISSED
+  COMPLETED
+  REJECTED
+  ONGOING
+}
+
 enum NotificationType {
   MATCH
   MESSAGE
@@ -190,6 +204,7 @@ model User {
   subscriptionTier  SubscriptionTier   @default(FREE)
   isProfileComplete Boolean            @default(false)
   profileCompletion Int                @default(0)
+  coinBalance       Int                @default(0)
   isOnline          Boolean            @default(false)
   lastSeenAt        DateTime?
   status            UserStatus         @default(ACTIVE)
@@ -242,6 +257,10 @@ model User {
   aiTargeted        AIRecommendation[] @relation("RecommendationTarget")
   datesProposed     DateEvent[]        @relation("DateProposer")
   datesReceived     DateEvent[]        @relation("DateReceiver")
+  coinTransactions  CoinTransaction[]
+  profileBoosts     ProfileBoost[]
+  callsMade         VideoCallLog[]     @relation("CallCaller")
+  callsReceived     VideoCallLog[]     @relation("CallReceiver")
 
   @@index([supabaseId])
   @@index([email])
@@ -322,6 +341,22 @@ model Conversation {
   @@map("conversations")
 }
 
+model VideoCallLog {
+  id          String     @id @default(cuid())
+  callerId    String
+  receiverId  String
+  status      CallStatus @default(ONGOING)
+  duration    Int        @default(0) // in seconds
+  createdAt   DateTime   @default(now())
+
+  caller      User @relation("CallCaller", fields: [callerId], references: [id], onDelete: Cascade)
+  receiver    User @relation("CallReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([callerId])
+  @@index([receiverId])
+  @@map("video_call_logs")
+}
+
 model Message {
   id             String      @id @default(cuid())
   conversationId String
@@ -374,6 +409,39 @@ model Subscription {
   @@index([stripeCustomerId])
   @@index([status])
   @@map("subscriptions")
+}
+
+// ============================================================
+// VIRTUAL ECONOMY (COINS & BOOSTS)
+// ============================================================
+
+model CoinTransaction {
+  id          String          @id @default(cuid())
+  userId      String
+  amount      Int             // positive for purchase, negative for spend
+  type        TransactionType
+  referenceId String?         // Stripe Session ID or item ID
+  createdAt   DateTime        @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("coin_transactions")
+}
+
+model ProfileBoost {
+  id          String   @id @default(cuid())
+  userId      String
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("profile_boosts")
 }
 
 // ============================================================
