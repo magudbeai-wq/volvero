@@ -30,7 +30,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
     });
 
     // Group by user
-    const grouped = stories.reduce<Record<string, { user: any; stories: any }>>((acc: any, story: any) => {
+    const grouped = stories.reduce((acc: any, story: any) => {
       const uid = story.userId;
       if (!acc[uid]) {
         acc[uid] = { user: story.user, stories: [] };
