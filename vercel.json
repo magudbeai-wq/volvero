@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "buildCommand": "npx turbo run build --filter=@volvero/web...",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
+}
