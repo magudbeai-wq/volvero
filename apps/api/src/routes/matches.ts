@@ -37,9 +37,9 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
 
     const excludedIds = [
       req.userId!,
-      ...swiped.map(s => s.receiverId),
-      ...blockedByMe.map(b => b.blockedId),
-      ...blockingMe.map(b => b.blockerId),
+      ...swiped.map((s: any) => s.receiverId),
+      ...blockedByMe.map((b: any) => b.blockedId),
+      ...blockingMe.map((b: any) => b.blockerId),
     ];
 
     // Build smart filters
@@ -105,7 +105,7 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
 
     // Score and rank candidates
     const scored = candidates
-      .map(candidate => {
+      .map((candidate: any) => {
         const score = calculateCompatibility(currentUser, candidate);
         const distance = (currentUser.latitude && currentUser.longitude && candidate.latitude && candidate.longitude)
           ? calculateDistance(
@@ -122,14 +122,14 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
           longitude: undefined,
         };
       })
-      .filter(c => {
+      .filter((c: any) => {
         // Distance filter
         if (currentUser.maxDistance && c.distance !== null) {
           return c.distance <= currentUser.maxDistance;
         }
         return true;
       })
-      .sort((a, b) => b.compatibility - a.compatibility)
+      .sort((a: any, b: any) => b.compatibility - a.compatibility)
       .slice(0, limit);
 
     res.json({ profiles: scored, hasMore: candidates.length > limit });
@@ -296,7 +296,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    const formatted = matches.map(m => ({
+    const formatted = matches.map((m: any) => ({
       id: m.id,
       compatibility: m.compatibility,
       isRead: m.isRead,

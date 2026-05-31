@@ -8,14 +8,7 @@
  * - Geographic proximity: 15%
  */
 
-import type { User } from '@prisma/client';
-
-type ScoringUser = Pick<User,
-  | 'religion' | 'relationshipGoal' | 'interests' | 'personalityTraits'
-  | 'lifestylePrefs' | 'latitude' | 'longitude' | 'lastSeenAt'
-  | 'profileCompletion' | 'isVerified' | 'matchCount'
-  | 'maritalStatus' | 'educationLevel'
->;
+type ScoringUser = any;
 
 export function calculateCompatibility(userA: ScoringUser, userB: ScoringUser): number {
   const weights = {
@@ -86,7 +79,7 @@ function scorePreferences(userA: ScoringUser, userB: ScoringUser): number {
   // Lifestyle preferences overlap
   maxScore += 2;
   if (userA.lifestylePrefs.length && userB.lifestylePrefs.length) {
-    const overlap = userA.lifestylePrefs.filter(p => userB.lifestylePrefs.includes(p));
+    const overlap = userA.lifestylePrefs.filter((p: string) => userB.lifestylePrefs.includes(p));
     const union = new Set([...userA.lifestylePrefs, ...userB.lifestylePrefs]).size;
     score += 2 * (overlap.length / union);
   }
@@ -101,7 +94,7 @@ function scoreInterests(userA: ScoringUser, userB: ScoringUser): number {
   if (!aInterests.length || !bInterests.length) return 0.5;
 
   // Jaccard similarity
-  const intersection = aInterests.filter(i => bInterests.includes(i));
+  const intersection = aInterests.filter((i: string) => bInterests.includes(i));
   const union = new Set([...aInterests, ...bInterests]).size;
 
   return intersection.length / union;
@@ -151,10 +144,10 @@ function scoreProximity(userA: ScoringUser, userB: ScoringUser): number {
  * Generate AI icebreaker suggestions based on shared interests
  */
 export function generateRuleBasedIcebreaker(
-  userA: Pick<User, 'fullName' | 'interests'>,
-  userB: Pick<User, 'interests' | 'city' | 'career'>
+  userA: any,
+  userB: any
 ): string[] {
-  const sharedInterests = userA.interests.filter(i => userB.interests.includes(i));
+  const sharedInterests = userA.interests.filter((i: string) => userB.interests.includes(i));
 
   const templates: string[] = [];
 

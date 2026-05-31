@@ -32,7 +32,7 @@ router.post('/icebreaker', requireAuth, async (req: AuthRequest, res) => {
         const { OpenAI } = await import('openai');
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-        const sharedInterests = currentUser.interests.filter(i => targetUser.interests.includes(i));
+        const sharedInterests = currentUser.interests.filter((i: string) => targetUser.interests.includes(i));
 
         const completion = await openai.chat.completions.create({
           model: process.env.OPENAI_MODEL || 'gpt-4o',
@@ -136,7 +136,7 @@ router.get('/recommendations', requireAuth, async (req: AuthRequest, res) => {
     });
 
     // Mark as shown
-    const ids = recommendations.map(r => r.id);
+    const ids = recommendations.map((r: any) => r.id);
     if (ids.length > 0) {
       await prisma.aIRecommendation.updateMany({
         where: { id: { in: ids } },

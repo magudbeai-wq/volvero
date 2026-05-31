@@ -342,7 +342,7 @@ router.get('/me/blocked', requireAuth, async (req: AuthRequest, res) => {
       },
     });
 
-    res.json({ blockedUsers: blocks.map(b => b.blocked) });
+    res.json({ blockedUsers: blocks.map((b: any) => b.blocked) });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch blocked users' });
   }

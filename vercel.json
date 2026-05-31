@@ -1,6 +1,16 @@
 {
+  "name": "volvero",
   "buildCommand": "npm run build --workspace=apps/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "experimentalServices": {
+    "volvero-api": {
+      "type": "web",
+      "root": "apps/api",
+      "entrypoint": "src/index.ts",
+      "routePrefix": "/api",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
 }
