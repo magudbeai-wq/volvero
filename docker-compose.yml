@@ -24,6 +24,44 @@ services:
     volumes:
       - redis_data:/data
 
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: volvero_api
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://lamaane:lamaane_secret_2024@db:5432/lamaane_doore
+      - REDIS_URL=redis://:lamaane_redis_secret@redis:6379
+      - JWT_SECRET=change_this_to_a_secure_random_string_at_least_32_chars
+      - ENCRYPTION_KEY=change_this_32_char_encryption_key_
+      - STRIPE_SECRET_KEY=YOUR_STRIPE_SECRET_KEY
+    ports:
+      - '3001:3001'
+    depends_on:
+      - db
+      - redis
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: volvero_web
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_SUPABASE_URL=https://cvvtxcjdpcgvxgwfonnc.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
   redis_data:
