@@ -60,9 +60,9 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setAuthUser(user);
+    supabase.auth.getUser().then((res: any) => {
+      if (res.data?.user) {
+        setAuthUser(res.data.user);
       }
     });
   }, [supabase]);
