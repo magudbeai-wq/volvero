@@ -13,10 +13,10 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 
 const NAV_ITEMS = [
-  { href: '/discover', icon: Heart, label: 'Discover', labelSo: 'Hel' },
-  { href: '/matches', icon: Users, label: 'Matches', labelSo: 'Kuxidhxidh' },
-  { href: '/messages', icon: MessageCircle, label: 'Messages', labelSo: 'Farriimo' },
-  { href: '/profile', icon: User, label: 'Profile', labelSo: 'Profayl' },
+  { href: '/discover', icon: Heart, label: 'Discover' },
+  { href: '/matches', icon: Users, label: 'Matches' },
+  { href: '/messages', icon: MessageCircle, label: 'Messages' },
+  { href: '/profile', icon: User, label: 'Profile' },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -94,7 +94,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <div className={clsx('text-sm font-semibold', isActive && 'text-white')}>
                     {item.label}
                   </div>
-                  <div className="text-xs" style={{ color: '#4b5563' }}>{item.labelSo}</div>
                 </div>
                 {isActive && (
                   <motion.div
