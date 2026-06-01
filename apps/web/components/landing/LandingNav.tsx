@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Menu, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { createClient } from "@/utils/supabase/client";
 
 export default function LandingNav() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +27,19 @@ export default function LandingNav() {
     { name: "Success Stories", href: "#stories" },
     { name: "Pricing", href: "#pricing" },
   ];
+
+  const handlePricingClick = async (e: React.MouseEvent, href: string) => {
+    if (href === "#pricing") {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        e.preventDefault();
+        toast.error("Please sign in or sign up to view and buy pricing plans!");
+        router.push("/sign-in");
+        return;
+      }
+    }
+  };
 
   return (
     <nav
@@ -50,6 +67,7 @@ export default function LandingNav() {
               <li key={link.name}>
                 <Link
                   href={link.href}
+                  onClick={(e) => handlePricingClick(e, link.href)}
                   className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
                 >
                   {link.name}
@@ -91,7 +109,10 @@ export default function LandingNav() {
                 <Link
                   href={link.href}
                   className="block text-sm font-medium text-gray-300 hover:text-white transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    handlePricingClick(e, link.href);
+                  }}
                 >
                   {link.name}
                 </Link>

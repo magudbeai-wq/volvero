@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api/client';
 import { loadStripe } from '@stripe/stripe-js';
 import toast from 'react-hot-toast';
+import { createClient } from '@/utils/supabase/client';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY || '');
 
@@ -84,6 +85,16 @@ export default function PricingSection() {
   const router = useRouter();
 
   const handleCheckout = async (planId: string) => {
+    // 1. Block unregistered / unauthenticated users and redirect them to sign-in
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      toast.error('Please sign in or sign up to buy pricing plans!');
+      router.push('/sign-in');
+      return;
+    }
+
     try {
       if (planId === 'coins') {
         // Redirect to profile wallet or buy-coins directly

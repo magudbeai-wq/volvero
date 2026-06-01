@@ -99,20 +99,69 @@ export default function OnboardingPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    if (!authUser) return;
+  const handleSubmit = async () => {
+    // 1. Fetch user session dynamically if state authUser is missing
+    let currentUser = authUser;
+    if (!currentUser) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        currentUser = user;
+        setAuthUser(user);
+      } else {
+        toast.error('Authentication session not found. Please sign in again.');
+        return;
+      }
+    }
+
+    // 2. Validate required fields & redirect to correct steps
+    if (!data.fullName || data.fullName.trim().length < 2) {
+      toast.error('Please enter your full name (at least 2 characters) in Step 1');
+      setStep(0);
+      return;
+    }
+
+    if (!data.dateOfBirth) {
+      toast.error('Please enter your date of birth in Step 1');
+      setStep(0);
+      return;
+    }
+
+    // Calculate age (must be 18+)
+    const dob = new Date(data.dateOfBirth);
+    const ageDiffMs = Date.now() - dob.getTime();
+    const ageDate = new Date(ageDiffMs);
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+    if (isNaN(age) || age < 18) {
+      toast.error('You must be at least 18 years old to use VOLVERO');
+      setStep(0);
+      return;
+    }
+
+    if (!data.gender) {
+      toast.error('Please select your gender in Step 1');
+      setStep(0);
+      return;
+    }
+
+    if (!data.relationshipGoal) {
+      toast.error('Please select your relationship goal in Step 3');
+      setStep(2);
+      return;
+    }
+
+    // 3. Trigger onboard mutation
     mutation.mutate({
-      supabaseId: authUser.id,
-      email: authUser.email,
-      fullName: data.fullName,
+      supabaseId: currentUser.id,
+      email: currentUser.email,
+      fullName: data.fullName.trim(),
       dateOfBirth: data.dateOfBirth,
-      gender: data.gender || undefined,
-      city: data.city,
-      country: data.country,
+      gender: data.gender,
+      city: data.city.trim() || undefined,
+      country: data.country.trim() || undefined,
       religion: data.religion || undefined,
-      relationshipGoal: data.relationshipGoal || undefined,
-      career: data.career,
-      bio: data.bio,
+      relationshipGoal: data.relationshipGoal,
+      career: data.career.trim() || undefined,
+      bio: data.bio.trim() || undefined,
       interests: data.interests,
       languages: data.languages,
       height: data.height ? Number(data.height) : undefined,

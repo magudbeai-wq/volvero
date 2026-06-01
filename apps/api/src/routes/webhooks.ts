@@ -68,12 +68,38 @@ router.post('/stripe', async (req, res) => {
           },
         });
 
+        // Verify profile on success, grant subscription tier
         await prisma.user.update({
           where: { id: userId },
-          data: { subscriptionTier: tier },
+          data: {
+            subscriptionTier: tier,
+            isVerified: tier !== 'FREE' ? true : undefined,
+            verificationStatus: tier !== 'FREE' ? 'VERIFIED' : undefined,
+          },
         });
 
         if (event.type === 'customer.subscription.created') {
+          // Grant coins for boosts!
+          let boostCoins = 0;
+          if (tier === 'GOLD') boostCoins = 500; // 5 boosts
+          else if (tier === 'PREMIUM') boostCoins = 100; // 1 boost
+
+          if (boostCoins > 0) {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { coinBalance: { increment: boostCoins } },
+            });
+            await prisma.coinTransaction.create({
+              data: {
+                userId,
+                amount: boostCoins,
+                type: 'PURCHASE',
+                referenceId: `subscription_boost_${subscription.id}`,
+              },
+            });
+            logger.info({ userId, boostCoins }, 'Granted free boost coins on active subscription');
+          }
+
           const user = await prisma.user.findUnique({ where: { id: userId } });
           if (user) {
             await sendEmail(EmailType.SUBSCRIPTION_WELCOME, {
@@ -138,17 +164,40 @@ router.post('/stripe', async (req, res) => {
           const plan = session.metadata.plan;
           if (userId && plan) {
              const tier = plan === 'vip' ? 'GOLD' : 'PREMIUM';
+             
+             // Grant free coins for boosts!
+             let boostCoins = 0;
+             if (tier === 'GOLD') boostCoins = 500;
+             else if (tier === 'PREMIUM') boostCoins = 100;
+
              await prisma.user.update({
                where: { id: userId },
-               data: { subscriptionTier: tier }
+               data: {
+                 subscriptionTier: tier,
+                 isVerified: true,
+                 verificationStatus: 'VERIFIED',
+                 coinBalance: boostCoins > 0 ? { increment: boostCoins } : undefined,
+               }
              });
+
+             if (boostCoins > 0) {
+               await prisma.coinTransaction.create({
+                 data: {
+                   userId,
+                   amount: boostCoins,
+                   type: 'PURCHASE',
+                   referenceId: `subscription_boost_dummy_${session.id}`,
+                 },
+               });
+             }
+
              // Also upsert subscription record
              await prisma.subscription.upsert({
                where: { userId },
                update: { tier, status: 'ACTIVE' },
                create: { userId, stripeCustomerId: `cust_dummy_${userId}`, tier, status: 'ACTIVE' }
              });
-             logger.info({ userId, tier }, 'Dummy Subscription credited via Stripe webhook');
+             logger.info({ userId, tier, boostCoins }, 'Dummy Subscription + Boosts + Verified status credited via Stripe webhook');
           }
         }
         break;
