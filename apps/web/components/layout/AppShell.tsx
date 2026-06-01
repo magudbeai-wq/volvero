@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Users, User, Sparkles, Bell } from 'lucide-react';
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { unreadMessages, unreadNotifications } = useAppStore();
   const [isWalletOpen, setIsWalletOpen] = useState(false);
 
@@ -28,6 +29,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => api.get('/api/users/me').then(r => r.data),
   });
+
+  // Automatically redirect new OAuth users to complete onboarding details
+  useEffect(() => {
+    if (user && !user.user?.isProfileComplete && pathname !== '/onboarding') {
+      router.push('/onboarding');
+    }
+  }, [user, pathname, router]);
 
   return (
     <div

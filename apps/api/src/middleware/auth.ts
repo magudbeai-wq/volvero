@@ -40,7 +40,7 @@ export async function requireAuth(
     const supabaseId = supabaseUser.id;
 
     // Get user from our DB
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { supabaseId },
       select: {
         id: true,
@@ -51,8 +51,31 @@ export async function requireAuth(
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found. Please complete onboarding.' });
-      return;
+      // Self-healing check: automatically provision PostgreSQL user record for Supabase authenticated OAuth signups
+      const email = supabaseUser.email || '';
+      const fullName = (supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || email.split('@')[0] || 'New User') as string;
+      
+      const created = await prisma.user.create({
+        data: {
+          supabaseId,
+          email,
+          fullName,
+          referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+          isProfileComplete: false,
+          profileCompletion: 0,
+          coinBalance: 0,
+          subscriptionTier: 'FREE',
+        },
+        select: {
+          id: true,
+          supabaseId: true,
+          subscriptionTier: true,
+          status: true,
+        }
+      });
+      
+      logger.info({ userId: created.id, email }, '✅ Self-healed: Automatically created missing PostgreSQL user record upon authentication');
+      user = created;
     }
 
     if (user.status === 'BANNED') {
