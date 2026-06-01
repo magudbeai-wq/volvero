@@ -59,13 +59,13 @@ export default function LandingNav() {
           </ul>
           <div className="flex items-center gap-4">
             <Link
-              href="/login"
+              href="/sign-in"
               className="text-sm font-medium text-white hover:text-gray-300 transition-colors"
             >
               Login
             </Link>
             <Link
-              href="/signup"
+              href="/sign-up"
               className="text-sm font-medium text-white bg-gradient-to-r from-[#7C3AED] to-[#EC4899] px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all transform hover:-translate-y-0.5"
             >
               Sign Up
@@ -99,14 +99,14 @@ export default function LandingNav() {
             ))}
             <li className="pt-4 border-t border-white/10 flex flex-col gap-3">
               <Link
-                href="/login"
+                href="/sign-in"
                 className="w-full text-center py-2.5 text-sm font-medium text-white rounded-full border border-white/20 hover:bg-white/5 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Login
               </Link>
               <Link
-                href="/signup"
+                href="/sign-up"
                 className="w-full text-center py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#7C3AED] to-[#EC4899] rounded-full shadow-lg shadow-[#7C3AED]/20"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
