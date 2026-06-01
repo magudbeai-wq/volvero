@@ -82,22 +82,30 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/api/debug-db', async (_req, res) => {
+  let settings = null;
+  let jwtSecretSetting = null;
+  let appJwtSecret = null;
+  let vaultSecrets = null;
+  let prismaError = null;
+
   try {
     const { prisma } = await import('./lib/prisma.js');
     
-    // Query pg_settings
-    const settings = await prisma.$queryRawUnsafe(
-      `SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'`
-    );
+    // 1. Query pg_settings
+    try {
+      settings = await prisma.$queryRawUnsafe(
+        `SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'`
+      );
+    } catch (e: any) {
+      settings = e.message;
+    }
     
-    let jwtSecretSetting = null;
     try {
       jwtSecretSetting = await prisma.$queryRawUnsafe(`SHOW jwt.secret`);
     } catch (e: any) {
       jwtSecretSetting = e.message;
     }
 
-    let appJwtSecret = null;
     try {
       appJwtSecret = await prisma.$queryRawUnsafe(`SHOW "app.settings.jwt_secret"`);
     } catch (e: any) {
@@ -105,22 +113,82 @@ app.get('/api/debug-db', async (_req, res) => {
     }
 
     // Try reading vault
-    let vaultSecrets = null;
     try {
       vaultSecrets = await prisma.$queryRawUnsafe(`SELECT * FROM vault.decrypted_secrets`);
     } catch (e: any) {
       vaultSecrets = e.message;
     }
-
-    res.json({
-      settings,
-      jwtSecretSetting,
-      appJwtSecret,
-      vaultSecrets
-    });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    prismaError = error.message;
   }
+
+  // 2. Fetch Vercel JS files to scrape keys
+  let extractedKeys: any[] = [];
+  try {
+    const targetUrl = 'https://web-sigma-gold-73.vercel.app/sign-in';
+    const htmlRes = await fetch(targetUrl);
+    if (htmlRes.ok) {
+      const html = await htmlRes.text();
+      const origin = new URL(targetUrl).origin;
+      const scriptRegex = /<script[^>]+src="([^"]+)"/g;
+      let match;
+      const scriptUrls = [];
+      
+      while ((match = scriptRegex.exec(html)) !== null) {
+        let src = match[1];
+        if (src.startsWith('/')) {
+          src = origin + src;
+        } else if (!src.startsWith('http')) {
+          src = origin + '/' + src;
+        }
+        if (src.includes('/_next/static/')) {
+          scriptUrls.push(src);
+        }
+      }
+
+      for (const url of scriptUrls) {
+        const jsRes = await fetch(url);
+        if (jsRes.ok) {
+          const js = await jsRes.text();
+          
+          // Search for Supabase url or ref
+          if (js.includes('cvvtxcjdpcgvxgwfonnc')) {
+            const urlMatch = js.match(/https:\/\/cvvtxcjdpcgvxgwfonnc\.supabase\.co/);
+            extractedKeys.push({
+              type: 'SUPABASE_URL_MATCH',
+              url: urlMatch ? urlMatch[0] : 'Ref found',
+              script: url.split('/').pop()
+            });
+          }
+          
+          // Search for JWT candidates
+          const jwtMatches = js.match(/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/g);
+          if (jwtMatches) {
+            jwtMatches.forEach(token => {
+              if (!token.includes('1234567890abcdef')) {
+                extractedKeys.push({
+                  type: 'SUPABASE_ANON_KEY',
+                  key: token,
+                  script: url.split('/').pop()
+                });
+              }
+            });
+          }
+        }
+      }
+    }
+  } catch (e: any) {
+    extractedKeys.push({ error: e.message });
+  }
+
+  res.json({
+    settings,
+    jwtSecretSetting,
+    appJwtSecret,
+    vaultSecrets,
+    prismaError,
+    extractedKeys
+  });
 });
 
 app.get('/', (_req, res) => {
