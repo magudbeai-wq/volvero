@@ -224,6 +224,8 @@ app.get('/api/debug-db', async (_req, res) => {
     appJwtSecret,
     vaultSecrets,
     prismaError,
+    p1Result,
+    p2Result,
     extractedKeys
   });
 });
