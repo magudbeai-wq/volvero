@@ -116,10 +116,13 @@ export default function PricingSection() {
       }
     } catch (error: any) {
       if (error.response?.status === 401) {
+        toast.dismiss();
         toast.error('Please sign in to subscribe!');
         router.push('/sign-in');
       } else {
-        toast.error('Checkout failed. Please try again later.');
+        toast.dismiss();
+        const errorMsg = error.response?.data?.details || error.response?.data?.error || 'Checkout failed. Please try again.';
+        toast.error(errorMsg);
       }
     }
   };

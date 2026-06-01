@@ -122,8 +122,12 @@ router.post('/create-subscription-checkout', requireAuth, async (req: AuthReques
     const session = await getStripe().checkout.sessions.create(sessionConfig);
 
     res.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create subscription checkout session' });
+  } catch (error: any) {
+    console.error('Stripe checkout session creation failed:', error);
+    res.status(500).json({ 
+      error: 'Failed to create subscription checkout session', 
+      details: error.message || String(error)
+    });
   }
 });
 
