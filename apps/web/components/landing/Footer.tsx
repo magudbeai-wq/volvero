@@ -94,9 +94,6 @@ export default function Footer() {
             © 2025 VOLVERO. All rights reserved. Made with 💜 for dreamers worldwide.
           </div>
           <div className="flex items-center gap-6">
-            <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}>
-              ● All systems operational
-            </span>
             <span className="text-xs" style={{ color: '#4b5563' }}>v1.0.0</span>
           </div>
         </div>

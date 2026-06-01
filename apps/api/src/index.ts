@@ -81,6 +81,48 @@ app.get('/health', (_req, res) => {
   });
 });
 
+app.get('/api/debug-db', async (_req, res) => {
+  try {
+    const { prisma } = await import('./lib/prisma.js');
+    
+    // Query pg_settings
+    const settings = await prisma.$queryRawUnsafe(
+      `SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'`
+    );
+    
+    let jwtSecretSetting = null;
+    try {
+      jwtSecretSetting = await prisma.$queryRawUnsafe(`SHOW jwt.secret`);
+    } catch (e: any) {
+      jwtSecretSetting = e.message;
+    }
+
+    let appJwtSecret = null;
+    try {
+      appJwtSecret = await prisma.$queryRawUnsafe(`SHOW "app.settings.jwt_secret"`);
+    } catch (e: any) {
+      appJwtSecret = e.message;
+    }
+
+    // Try reading vault
+    let vaultSecrets = null;
+    try {
+      vaultSecrets = await prisma.$queryRawUnsafe(`SELECT * FROM vault.decrypted_secrets`);
+    } catch (e: any) {
+      vaultSecrets = e.message;
+    }
+
+    res.json({
+      settings,
+      jwtSecretSetting,
+      appJwtSecret,
+      vaultSecrets
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/', (_req, res) => {
   res.json({
     status: 'ok',
