@@ -121,36 +121,33 @@ export default function StoriesBar() {
     }
 
     setIsUploading(true);
-    const toastId = toast.loading('Uploading story to ImageKit...');
+    const toastId = toast.loading('Uploading story to Cloudinary...');
 
     try {
-      // 1. Get secure ImageKit upload parameters
-      const authRes = await api.get('/api/upload/imagekit-auth');
-      const { token, expire, signature, publicKey, urlEndpoint } = authRes.data;
+      // 1. Get secure Cloudinary upload parameters
+      const authRes = await api.get('/api/upload/cloudinary-auth');
+      const { signature, timestamp, cloudName, apiKey, folder } = authRes.data;
 
       // 2. Prepare Form Data for direct upload
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('fileName', `story_${user?.id || 'unknown'}_${Date.now()}.jpg`);
-      formData.append('publicKey', publicKey);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp.toString());
       formData.append('signature', signature);
-      formData.append('expire', expire.toString());
-      formData.append('token', token);
-      formData.append('useUniqueFileName', 'true');
-      formData.append('folder', '/stories');
+      formData.append('folder', folder);
 
-      // 3. Post directly to ImageKit CDN API
-      const uploadRes = await fetch(`https://upload.imagekit.io/api/v1/files/upload`, {
+      // 3. Post directly to Cloudinary API
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',
         body: formData,
       });
 
       if (!uploadRes.ok) {
-        throw new Error('ImageKit direct upload failed');
+        throw new Error('Cloudinary direct upload failed');
       }
 
       const uploadData = await uploadRes.json();
-      const mediaUrl = uploadData.url;
+      const mediaUrl = uploadData.secure_url;
 
       // 4. Create Story record in Database
       toast.loading('Publishing story...', { id: toastId });
@@ -348,7 +345,7 @@ export default function StoriesBar() {
                   {isUploading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Uploading to ImageKit...</span>
+                      <span>Uploading to Cloudinary...</span>
                     </>
                   ) : (
                     <span>Publish Story</span>

@@ -24,6 +24,9 @@ import datesRouter from './routes/dates.js';
 import paymentsRouter from './routes/payments.js';
 import boostsRouter from './routes/boosts.js';
 
+// Import background jobs and queues workers to start running
+import './services/jobs.js';
+
 const app = express();
 const httpServer = createServer(app);
 

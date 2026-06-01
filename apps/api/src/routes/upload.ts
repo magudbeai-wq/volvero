@@ -15,19 +15,19 @@ cloudinary.config({
 
 const upload = multer({ dest: 'tmp/' });
 
-// Import new ImageKit and Unsplash services
-import { getUploadAuthParams } from '../services/imagekit.js';
+// Import Cloudinary and Unsplash services
+import { generateSignedUploadParams } from '../services/cloudinary.js';
 import { getDatingProfilePhoto } from '../services/unsplash.js';
 
-// ── GET /api/upload/imagekit-auth ───────────────────────────────────
-// Provides direct secure authentication parameters for client-side uploads.
-// Protects the private key on the server while allowing zero-latency uploads.
-router.get('/imagekit-auth', requireAuth, (req: AuthRequest, res) => {
+// ── GET /api/upload/cloudinary-auth ──────────────────────────────────
+// Provides secure cryptographic signature parameters for direct client uploads to Cloudinary.
+// Ensures private keys remain hidden on the server while allowing client-side speed.
+router.get('/cloudinary-auth', requireAuth, (req: AuthRequest, res) => {
   try {
-    const authParams = getUploadAuthParams();
+    const authParams = generateSignedUploadParams(req.userId!, 'stories');
     res.json(authParams);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to generate ImageKit upload parameters' });
+    res.status(500).json({ error: 'Failed to generate Cloudinary upload parameters' });
   }
 });
 
