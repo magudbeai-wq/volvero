@@ -21,7 +21,7 @@ export function useAuthSync() {
 
     syncToken();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       if (session?.access_token && typeof window !== 'undefined') {
         (window as Window & { __supabaseToken?: string }).__supabaseToken = session.access_token;
       } else if (event === 'SIGNED_OUT' && typeof window !== 'undefined') {
