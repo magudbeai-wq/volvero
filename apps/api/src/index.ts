@@ -87,36 +87,73 @@ app.get('/api/debug-db', async (_req, res) => {
   let appJwtSecret = null;
   let vaultSecrets = null;
   let prismaError = null;
+  let p1Result: any = null;
+  let p2Result: any = null;
 
   try {
-    const { prisma } = await import('./lib/prisma.js');
+    const { PrismaClient } = await import('@prisma/client');
     
-    // 1. Query pg_settings
+    // Test Port 5432 (Session Mode Pooler)
+    const p1 = new PrismaClient({
+      datasources: {
+        db: {
+          url: 'postgresql://postgres.cvvtxcjdpcgvxgwfonnc:bookh112233@aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require'
+        }
+      }
+    });
     try {
-      settings = await prisma.$queryRawUnsafe(
-        `SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'`
-      );
+      await p1.$connect();
+      const val = await p1.$queryRawUnsafe('SELECT 1 as result');
+      p1Result = { success: true, value: val };
     } catch (e: any) {
-      settings = e.message;
-    }
-    
-    try {
-      jwtSecretSetting = await prisma.$queryRawUnsafe(`SHOW jwt.secret`);
-    } catch (e: any) {
-      jwtSecretSetting = e.message;
+      p1Result = { success: false, error: e.message };
+    } finally {
+      await p1.$disconnect();
     }
 
+    // Test Port 6543 (Transaction Mode Pooler)
+    const p2 = new PrismaClient({
+      datasources: {
+        db: {
+          url: 'postgresql://postgres.cvvtxcjdpcgvxgwfonnc:bookh112233@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require'
+        }
+      }
+    });
     try {
-      appJwtSecret = await prisma.$queryRawUnsafe(`SHOW "app.settings.jwt_secret"`);
+      await p2.$connect();
+      const val = await p2.$queryRawUnsafe('SELECT 1 as result');
+      p2Result = { success: true, value: val };
     } catch (e: any) {
-      appJwtSecret = e.message;
+      p2Result = { success: false, error: e.message };
+    } finally {
+      await p2.$disconnect();
     }
 
-    // Try reading vault
-    try {
-      vaultSecrets = await prisma.$queryRawUnsafe(`SELECT * FROM vault.decrypted_secrets`);
-    } catch (e: any) {
-      vaultSecrets = e.message;
+    // If p1 succeeds, query vault secrets
+    if (p1Result?.success) {
+      const p1Client = new PrismaClient({
+        datasources: { db: { url: 'postgresql://postgres.cvvtxcjdpcgvxgwfonnc:bookh112233@aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require' } }
+      });
+      try {
+        vaultSecrets = await p1Client.$queryRawUnsafe('SELECT * FROM vault.decrypted_secrets');
+        settings = await p1Client.$queryRawUnsafe("SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'");
+      } catch (e: any) {
+        vaultSecrets = "Query failed: " + e.message;
+      } finally {
+        await p1Client.$disconnect();
+      }
+    } else if (p2Result?.success) {
+      const p2Client = new PrismaClient({
+        datasources: { db: { url: 'postgresql://postgres.cvvtxcjdpcgvxgwfonnc:bookh112233@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require' } }
+      });
+      try {
+        vaultSecrets = await p2Client.$queryRawUnsafe('SELECT * FROM vault.decrypted_secrets');
+        settings = await p2Client.$queryRawUnsafe("SELECT name, setting FROM pg_settings WHERE name LIKE '%jwt%' OR name LIKE '%secret%' OR name LIKE '%api%'");
+      } catch (e: any) {
+        vaultSecrets = "Query failed: " + e.message;
+      } finally {
+        await p2Client.$disconnect();
+      }
     }
   } catch (error: any) {
     prismaError = error.message;
