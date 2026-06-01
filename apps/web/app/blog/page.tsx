@@ -188,7 +188,7 @@ export default function BlogPage() {
               Get the latest dating tips and VOLVERO updates delivered straight to your inbox.
             </p>
             
-            <form className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" action="#">
               <input 
                 type="email" 
                 placeholder="Enter your email address" 
