@@ -99,7 +99,7 @@ router.post('/create-subscription-checkout', requireAuth, async (req: AuthReques
       }
     };
 
-    if (priceId.includes('placeholder')) {
+    if (!priceId.startsWith('price_')) {
       // Create a one-time payment instead of subscription if we don't have real price IDs set up yet (to prevent 500 error)
       sessionConfig.mode = 'payment';
       sessionConfig.line_items = [
