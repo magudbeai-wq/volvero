@@ -15,6 +15,35 @@ cloudinary.config({
 
 const upload = multer({ dest: 'tmp/' });
 
+// Import new ImageKit and Unsplash services
+import { getUploadAuthParams } from '../services/imagekit.js';
+import { getDatingProfilePhoto } from '../services/unsplash.js';
+
+// ── GET /api/upload/imagekit-auth ───────────────────────────────────
+// Provides direct secure authentication parameters for client-side uploads.
+// Protects the private key on the server while allowing zero-latency uploads.
+router.get('/imagekit-auth', requireAuth, (req: AuthRequest, res) => {
+  try {
+    const authParams = getUploadAuthParams();
+    res.json(authParams);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate ImageKit upload parameters' });
+  }
+});
+
+// ── GET /api/upload/avatar-suggestion ───────────────────────────────
+// Suggests high-quality Unsplash portrait matches dynamically for the user
+router.get('/avatar-suggestion', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const gender = (req.query.gender as 'MALE' | 'FEMALE' | 'ALL') || 'ALL';
+    const keyword = req.query.keyword as string | undefined;
+    const photo = await getDatingProfilePhoto(gender, keyword);
+    res.json(photo);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve portrait suggestions' });
+  }
+});
+
 // ── POST /api/upload/audio ──────────────────────────────────────
 router.post('/audio', requireAuth, upload.single('audio'), async (req: AuthRequest, res) => {
   try {
@@ -37,3 +66,4 @@ router.post('/audio', requireAuth, upload.single('audio'), async (req: AuthReque
 });
 
 export default router;
+
