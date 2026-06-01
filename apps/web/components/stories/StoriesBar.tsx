@@ -1,12 +1,13 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Plus, X, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, X, Eye, Upload, Loader2, Sparkles } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import { useAppStore } from '@/lib/store/appStore';
+import toast from 'react-hot-toast';
 
 interface Story {
   id: string;
@@ -31,7 +32,15 @@ interface StoryGroup {
 export default function StoriesBar() {
   const [activeGroup, setActiveGroup] = useState<StoryGroup | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAppStore();
+  const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey: ['stories'],
@@ -44,6 +53,11 @@ export default function StoriesBar() {
   const openStory = (group: StoryGroup) => {
     setActiveGroup(group);
     setActiveIndex(0);
+    
+    // Record view for the first story
+    if (group.stories[0]) {
+      api.post(`/api/stories/${group.stories[0].id}/view`).catch(() => {});
+    }
   };
 
   const closeStory = () => {
@@ -54,13 +68,17 @@ export default function StoriesBar() {
   const nextStory = () => {
     if (!activeGroup) return;
     if (activeIndex < activeGroup.stories.length - 1) {
-      setActiveIndex(prev => prev + 1);
+      const nextIdx = activeIndex + 1;
+      setActiveIndex(nextIdx);
+      // Record view for next story
+      if (activeGroup.stories[nextIdx]) {
+        api.post(`/api/stories/${activeGroup.stories[nextIdx].id}/view`).catch(() => {});
+      }
     } else {
       // Go to next group
-      const idx = storyGroups.indexOf(activeGroup);
+      const idx = storyGroups.findIndex(g => g.user.id === activeGroup.user.id);
       if (idx < storyGroups.length - 1) {
-        setActiveGroup(storyGroups[idx + 1]);
-        setActiveIndex(0);
+        openStory(storyGroups[idx + 1]);
       } else {
         closeStory();
       }
@@ -73,19 +91,113 @@ export default function StoriesBar() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be smaller than 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAddStory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      toast.error('Please select an image first');
+      return;
+    }
+
+    setIsUploading(true);
+    const toastId = toast.loading('Uploading story to ImageKit...');
+
+    try {
+      // 1. Get secure ImageKit upload parameters
+      const authRes = await api.get('/api/upload/imagekit-auth');
+      const { token, expire, signature, publicKey, urlEndpoint } = authRes.data;
+
+      // 2. Prepare Form Data for direct upload
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('fileName', `story_${user?.id || 'unknown'}_${Date.now()}.jpg`);
+      formData.append('publicKey', publicKey);
+      formData.append('signature', signature);
+      formData.append('expire', expire.toString());
+      formData.append('token', token);
+      formData.append('useUniqueFileName', 'true');
+      formData.append('folder', '/stories');
+
+      // 3. Post directly to ImageKit CDN API
+      const uploadRes = await fetch(`https://upload.imagekit.io/api/v1/files/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('ImageKit direct upload failed');
+      }
+
+      const uploadData = await uploadRes.json();
+      const mediaUrl = uploadData.url;
+
+      // 4. Create Story record in Database
+      toast.loading('Publishing story...', { id: toastId });
+      await api.post('/api/stories', {
+        mediaUrl,
+        caption,
+        duration: 5,
+      });
+
+      toast.success('Story published successfully! Active for 24 hours.', { id: toastId });
+      
+      // Reset State
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setCaption('');
+      setIsModalOpen(false);
+
+      // Invalidate query to refresh Stories Bar
+      queryClient.invalidateQueries({ queryKey: ['stories'] });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to publish story. Please try again.', { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <>
       {/* Stories bar */}
       <div className="flex gap-3 px-4 py-4 overflow-x-auto no-scrollbar">
-        {/* Add story */}
-        <button className="flex-shrink-0 flex flex-col items-center gap-1.5" onClick={() => {}}>
+        {/* Add story button */}
+        <button 
+          className="flex-shrink-0 flex flex-col items-center gap-1.5" 
+          onClick={() => setIsModalOpen(true)}
+        >
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center relative"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '2px dashed rgba(139,92,246,0.4)' }}
+            className="w-16 h-16 rounded-2xl flex items-center justify-center relative transition-transform duration-300 hover:scale-105"
+            style={{ 
+              background: 'rgba(19, 26, 43, 0.6)', 
+              border: '2px dashed rgba(124, 58, 237, 0.4)',
+              boxShadow: 'inset 0 0 12px rgba(124, 58, 237, 0.1)'
+            }}
           >
             <Plus className="w-6 h-6" style={{ color: '#a78bfa' }} />
           </div>
-          <span className="text-[10px] font-medium" style={{ color: '#6b7280' }}>Add Story</span>
+          <span className="text-[10px] font-medium text-slate-400">Add Story</span>
         </button>
 
         {/* Story avatars */}
@@ -95,15 +207,16 @@ export default function StoriesBar() {
             <button
               key={group.user.id}
               onClick={() => openStory(group)}
-              className="flex-shrink-0 flex flex-col items-center gap-1.5"
+              className="flex-shrink-0 flex flex-col items-center gap-1.5 transition-transform duration-300 hover:scale-105"
             >
               <div
-                className="w-16 h-16 rounded-2xl overflow-hidden p-0.5"
+                className="w-16 h-16 rounded-2xl overflow-hidden p-[2px]"
                 style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #2563eb, #ec4899)',
+                  background: 'linear-gradient(135deg, #7C3AED, #EC4899, #FBBF24)',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
                 }}
               >
-                <div className="w-full h-full rounded-[14px] overflow-hidden">
+                <div className="w-full h-full rounded-[14px] overflow-hidden bg-slate-900">
                   {group.user.profilePhoto ? (
                     <Image
                       src={group.user.profilePhoto}
@@ -127,6 +240,125 @@ export default function StoriesBar() {
           );
         })}
       </div>
+
+      {/* Add Story Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(11, 16, 32, 0.85)', backdropFilter: 'blur(12px)' }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-3xl p-6 relative border border-purple-500/20"
+              style={{ background: 'rgba(19, 26, 43, 0.9)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                disabled={isUploading}
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+                <h3 className="text-xl font-bold text-white">Create a Story</h3>
+              </div>
+
+              <form onSubmit={handleAddStory} className="space-y-4">
+                {/* File picker dropzone */}
+                <div 
+                  onClick={!isUploading ? triggerFileInput : undefined}
+                  className={`w-full aspect-[9/16] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all duration-300 ${
+                    previewUrl ? 'border-purple-500' : 'border-slate-700 hover:border-purple-500/50 bg-slate-950/40'
+                  }`}
+                >
+                  {previewUrl ? (
+                    <>
+                      <Image 
+                        src={previewUrl} 
+                        alt="Story preview" 
+                        fill 
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+                          setPreviewUrl(null);
+                        }}
+                        className="absolute bottom-4 right-4 bg-red-500/80 p-2 rounded-full text-white hover:bg-red-600 transition-colors"
+                        disabled={isUploading}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center p-6 space-y-2">
+                      <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto">
+                        <Upload className="w-6 h-6 text-purple-400" />
+                      </div>
+                      <p className="text-sm font-semibold text-white">Choose Story Image</p>
+                      <p className="text-xs text-slate-400">Supports JPG, PNG, WEBP up to 10MB</p>
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden" 
+                    accept="image/*"
+                    disabled={isUploading}
+                  />
+                </div>
+
+                {/* Caption input */}
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Caption (Optional)</label>
+                  <input 
+                    type="text"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    placeholder="Add an inspiring caption..."
+                    maxLength={100}
+                    disabled={isUploading}
+                    className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  />
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedFile}
+                  className="w-full h-12 rounded-xl text-white font-bold flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50"
+                  style={{
+                    background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                  }}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Uploading to ImageKit...</span>
+                    </>
+                  ) : (
+                    <span>Publish Story</span>
+                  )}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Full-screen story viewer */}
       <AnimatePresence>
