@@ -109,6 +109,32 @@ router.get('/plans', (_req, res) => {
           passport: true,
         }
       },
+      {
+        id: 'gold',
+        name: 'Gold',
+        nameAr: 'ذهبي',
+        nameSo: 'Dahab',
+        price: 3499,
+        currency: 'usd',
+        interval: 'month',
+        priceId: process.env.STRIPE_GOLD_MONTHLY_PRICE_ID,
+        features: [
+          'All Premium features',
+          'Passport mode (any city)',
+          '5 boosts/month',
+          'VIP badge',
+          'Profile analytics',
+          'Priority support 24/7',
+        ],
+        limitations: {
+          dailyLikes: -1,
+          canSeeWhoLikedYou: true,
+          canRewind: true,
+          canBoost: true,
+          incognito: true,
+          passport: true,
+        }
+      },
     ]
   });
 });

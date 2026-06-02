@@ -3,6 +3,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 
@@ -41,6 +42,27 @@ router.get('/avatar-suggestion', requireAuth, async (req: AuthRequest, res) => {
     res.json(photo);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve portrait suggestions' });
+  }
+});
+
+// ── POST /api/upload/photo ──────────────────────────────────────
+router.post('/photo', requireAuth, upload.single('photo'), async (req: AuthRequest, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No photo provided' });
+    }
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'volvero_photos',
+    });
+
+    // Cleanup temp file
+    fs.unlinkSync(req.file.path);
+
+    res.json({ url: result.secure_url });
+  } catch (error) {
+    logger.error({ error }, 'Failed to upload photo to Cloudinary');
+    res.status(500).json({ error: 'Failed to upload photo' });
   }
 });
 
