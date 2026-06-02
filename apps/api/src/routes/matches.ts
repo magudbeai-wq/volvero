@@ -65,87 +65,126 @@ router.get('/discover', requireAuth, async (req: AuthRequest, res) => {
       filters.dateOfBirth = { gte: minDob, lte: maxDob };
     }
 
-    const candidates = await prisma.user.findMany({
-      where: filters as Record<string, unknown>,
-      select: {
-        id: true,
-        fullName: true,
-        nickname: true,
-        dateOfBirth: true,
-        gender: true,
-        bio: true,
-        city: true,
-        country: true,
-        religion: true,
-        educationLevel: true,
-        career: true,
-        height: true,
-        interests: true,
-        personalityTraits: true,
-        lifestylePrefs: true,
-        profilePhoto: true,
-        photos: true,
-        voiceIntroUrl: true,
-        isVerified: true,
-        isOnline: true,
-        lastSeenAt: true,
-        latitude: true,
-        longitude: true,
-        showDistance: true,
-        showAge: true,
-        relationshipGoal: true,
-        matchCount: true,
-        subscriptionTier: true,
-        maritalStatus: true,
-        profileCompletion: true,
-      },
-      skip: page * limit,
-      take: limit * 3,
-    });
+    const candidateFields = {
+      id: true,
+      fullName: true,
+      nickname: true,
+      dateOfBirth: true,
+      gender: true,
+      bio: true,
+      city: true,
+      country: true,
+      religion: true,
+      educationLevel: true,
+      career: true,
+      height: true,
+      interests: true,
+      personalityTraits: true,
+      lifestylePrefs: true,
+      profilePhoto: true,
+      photos: true,
+      voiceIntroUrl: true,
+      isVerified: true,
+      isOnline: true,
+      lastSeenAt: true,
+      latitude: true,
+      longitude: true,
+      showDistance: true,
+      showAge: true,
+      relationshipGoal: true,
+      matchCount: true,
+      subscriptionTier: true,
+      maritalStatus: true,
+      profileCompletion: true,
+    };
 
-    // Fetch active boosts for these candidates
-    const candidateIds = candidates.map((c: any) => c.id);
-    const activeBoosts = await prisma.profileBoost.findMany({
-      where: {
-        userId: { in: candidateIds },
-        isActive: true,
-        expiresAt: { gt: new Date() }
-      },
-      select: { userId: true }
-    });
-    const boostedUserIds = new Set(activeBoosts.map((b: any) => b.userId));
+    const getScoredProfiles = async (whereFilters: Record<string, unknown>, applyDistanceFilter: boolean) => {
+      const candidates = await prisma.user.findMany({
+        where: whereFilters as Record<string, unknown>,
+        select: candidateFields,
+        skip: page * limit,
+        take: limit * 3,
+      });
 
-    // Score and rank candidates
-    const scored = candidates
-      .map((candidate: any) => {
-        const score = calculateCompatibility(currentUser, candidate);
-        const distance = (currentUser.latitude && currentUser.longitude && candidate.latitude && candidate.longitude)
-          ? calculateDistance(
-              currentUser.latitude, currentUser.longitude,
-              candidate.latitude, candidate.longitude
-            )
-          : null;
+      if (candidates.length === 0) return { scored: [], rawLength: 0 };
 
-        return {
-          ...candidate,
-          compatibility: Math.min(100, Math.round(score * 100) + (boostedUserIds.has(candidate.id) ? 30 : 0)),
-          isBoosted: boostedUserIds.has(candidate.id),
-          distance: candidate.showDistance ? distance : null,
-          latitude: undefined,
-          longitude: undefined,
-        };
-      })
-      .filter((c: any) => {
-        // Distance filter
-        if (currentUser.maxDistance && c.distance !== null) {
-          return c.distance <= currentUser.maxDistance;
-        }
-        return true;
-      })
-      .sort((a: any, b: any) => b.compatibility - a.compatibility)
-      .slice(0, limit);
+      // Fetch active boosts for these candidates
+      const candidateIds = candidates.map((c: any) => c.id);
+      const activeBoosts = await prisma.profileBoost.findMany({
+        where: {
+          userId: { in: candidateIds },
+          isActive: true,
+          expiresAt: { gt: new Date() }
+        },
+        select: { userId: true }
+      });
+      const boostedUserIds = new Set(activeBoosts.map((b: any) => b.userId));
 
-    res.json({ profiles: scored, hasMore: candidates.length > limit });
+      // Score and rank candidates
+      const scored = candidates
+        .map((candidate: any) => {
+          const score = calculateCompatibility(currentUser, candidate);
+          const distance = (currentUser.latitude && currentUser.longitude && candidate.latitude && candidate.longitude)
+            ? calculateDistance(
+                currentUser.latitude, currentUser.longitude,
+                candidate.latitude, candidate.longitude
+              )
+            : null;
+
+          return {
+            ...candidate,
+            compatibility: Math.min(100, Math.round(score * 100) + (boostedUserIds.has(candidate.id) ? 30 : 0)),
+            isBoosted: boostedUserIds.has(candidate.id),
+            distance: candidate.showDistance ? distance : null,
+            latitude: undefined,
+            longitude: undefined,
+          };
+        })
+        .filter((c: any) => {
+          // Distance filter
+          if (applyDistanceFilter && currentUser.maxDistance && c.distance !== null) {
+            return c.distance <= currentUser.maxDistance;
+          }
+          return true;
+        })
+        .sort((a: any, b: any) => b.compatibility - a.compatibility);
+
+      return { scored, rawLength: candidates.length };
+    };
+
+    // Tier 1: Preferred filters (matching gender, age preferences, and distance)
+    let { scored, rawLength } = await getScoredProfiles(filters, true);
+
+    // Tier 2: Relaxed Age & Gender (matching everyone, but keeping distance constraint)
+    if (scored.length === 0 && (filters.gender || filters.dateOfBirth)) {
+      console.log('🔄 Discover: Tier 1 empty. Relaxing gender and age restrictions...');
+      const relaxedFilters = {
+        id: { notIn: excludedIds },
+        status: 'ACTIVE',
+        isIncognito: false,
+        isProfileComplete: true,
+      };
+      const res = await getScoredProfiles(relaxedFilters, true);
+      scored = res.scored;
+      rawLength = res.rawLength;
+    }
+
+    // Tier 3: Global Relaxed (relaxing gender, age range, AND distance constraints)
+    if (scored.length === 0) {
+      console.log('🔄 Discover: Tier 2 empty. Relaxing distance restriction globally...');
+      const relaxedFilters = {
+        id: { notIn: excludedIds },
+        status: 'ACTIVE',
+        isIncognito: false,
+        isProfileComplete: true,
+      };
+      const res = await getScoredProfiles(relaxedFilters, false);
+      scored = res.scored;
+      rawLength = res.rawLength;
+    }
+
+    const sliced = scored.slice(0, limit);
+    res.json({ profiles: sliced, hasMore: rawLength > limit });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch discovery profiles' });
   }
@@ -204,15 +243,23 @@ router.post('/swipe', requireAuth, async (req: AuthRequest, res) => {
 
     // Check for mutual like
     if (direction === 'RIGHT' || direction === 'SUPER') {
-      const theirSwipe = await prisma.swipe.findFirst({
-        where: {
-          giverId: targetId,
-          receiverId: req.userId,
-          direction: { in: ['RIGHT', 'SUPER'] },
-        },
-      });
+      const [theirSwipe, targetUser] = await Promise.all([
+        prisma.swipe.findFirst({
+          where: {
+            giverId: targetId,
+            receiverId: req.userId,
+            direction: { in: ['RIGHT', 'SUPER'] },
+          },
+        }),
+        prisma.user.findUnique({
+          where: { id: targetId },
+          select: { email: true }
+        })
+      ]);
 
-      if (theirSwipe) {
+      const isBot = targetUser?.email?.endsWith('@bot.velora.com');
+
+      if (theirSwipe || isBot) {
         // Get both users for compatibility
         const [userA, userB] = await Promise.all([
           prisma.user.findUnique({ where: { id: req.userId } }),

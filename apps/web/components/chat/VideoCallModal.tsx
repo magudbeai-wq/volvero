@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 interface VideoCallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  targetUser: { id: string; fullName: string; profilePhoto?: string } | null;
+  targetUser: { id: string; fullName: string; profilePhoto?: string; email?: string } | null;
   isIncoming?: boolean;
 }
 
@@ -21,6 +21,15 @@ export function VideoCallModal({ isOpen, onClose, targetUser, isIncoming = false
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+
+  const handleEndCall = () => {
+    if (localVideoRef.current?.srcObject) {
+      const stream = localVideoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(t => t.stop());
+    }
+    toast('Call ended', { icon: '📞' });
+    onClose();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -33,12 +42,22 @@ export function VideoCallModal({ isOpen, onClose, targetUser, isIncoming = false
           }
           setCallState('RINGING');
           
-          // Simulate answer after 3 seconds
+          // Simulate answer after 3 seconds for real users, or decline after 5 seconds for bots
           if (!isIncoming) {
-            setTimeout(() => {
-              setCallState('CONNECTED');
-              toast.success(`${targetUser?.fullName} joined the call!`);
-            }, 3000);
+            const isBot = targetUser?.email?.endsWith('@bot.velora.com');
+            if (isBot) {
+              const timer = setTimeout(() => {
+                toast.error(`${targetUser?.fullName} is currently busy. Please try texting! 💬`, { id: 'bot-call-busy' });
+                handleEndCall();
+              }, 5000);
+              return () => clearTimeout(timer);
+            } else {
+              const timer = setTimeout(() => {
+                setCallState('CONNECTED');
+                toast.success(`${targetUser?.fullName} joined the call!`);
+              }, 3000);
+              return () => clearTimeout(timer);
+            }
           }
         })
         .catch(() => {
@@ -53,15 +72,6 @@ export function VideoCallModal({ isOpen, onClose, targetUser, isIncoming = false
       }
     }
   }, [isOpen, isIncoming, targetUser, onClose]);
-
-  const handleEndCall = () => {
-    if (localVideoRef.current?.srcObject) {
-      const stream = localVideoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(t => t.stop());
-    }
-    toast('Call ended', { icon: '📞' });
-    onClose();
-  };
 
   if (!isOpen || !targetUser) return null;
 

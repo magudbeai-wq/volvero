@@ -8,6 +8,7 @@ import { initSocket } from './socket/chat.js';
 import { logger } from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
+import { seedBots } from './utils/seedBots.js';
 
 // Routes
 import usersRouter from './routes/users.js';
@@ -118,10 +119,13 @@ initSocket(httpServer);
 // ── Start Server ─────────────────────────────────────────────
 const PORT = Number(process.env.PORT) || 3001;
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
   logger.info(`🚀 Velora API running on port ${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
   logger.info(`🌐 CORS Origin: ${process.env.SOCKET_CORS_ORIGIN}`);
+  
+  // Seed sample bots on startup
+  await seedBots();
 });
 
 export { app, httpServer };

@@ -18,10 +18,10 @@ router.get('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
       },
       include: {
         userA: {
-          select: { id: true, fullName: true, profilePhoto: true, isVerified: true, isOnline: true, city: true },
+          select: { id: true, fullName: true, profilePhoto: true, isVerified: true, isOnline: true, city: true, email: true },
         },
         userB: {
-          select: { id: true, fullName: true, profilePhoto: true, isVerified: true, isOnline: true, city: true },
+          select: { id: true, fullName: true, profilePhoto: true, isVerified: true, isOnline: true, city: true, email: true },
         },
       },
     });
@@ -112,6 +112,13 @@ router.post('/:conversationId', requireAuth, async (req: AuthRequest, res) => {
         lastMessage: type === 'TEXT' ? content : `📎 ${type.toLowerCase()}`,
         lastMsgAt: new Date(),
       },
+    });
+
+    // Trigger bot auto-reply asynchronously
+    import('../services/bot.js').then(({ handleBotReply }) => {
+      handleBotReply(conversationId as string, req.userId!, content as string);
+    }).catch((err) => {
+      console.error('Failed to load bot reply service:', err);
     });
 
     res.json({ message });

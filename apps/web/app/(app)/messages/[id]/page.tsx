@@ -42,6 +42,7 @@ interface ConversationData {
       isVerified: boolean;
       isOnline: boolean;
       city?: string;
+      email?: string;
     }>;
   };
   messages: Message[];
@@ -356,12 +357,22 @@ export default function ChatWindow() {
         </div>
 
         <div className="flex items-center gap-1">
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: '#9ca3af' }}>
+          <button 
+            onClick={() => {
+              if (otherUser?.email?.endsWith('@bot.velora.com')) {
+                toast.error(`${otherUser.fullName} is busy and can't accept voice calls. Please send a text message! 💬`, { id: 'bot-voice-call' });
+              } else {
+                toast(`${otherUser?.fullName || 'User'} is currently offline. Voice calling is coming soon, try Video Call! 📞`, { id: 'voice-call-soon' });
+              }
+            }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors cursor-pointer" 
+            style={{ color: '#9ca3af' }}
+          >
             <Phone className="w-4.5 h-4.5" />
           </button>
           <button 
             onClick={() => setIsVideoCallOpen(true)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" 
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors cursor-pointer" 
             style={{ color: '#9ca3af' }}
           >
             <Video className="w-4.5 h-4.5" />

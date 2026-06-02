@@ -9,6 +9,11 @@ interface SocketUser {
 }
 
 const connectedUsers = new Map<string, string>(); // userId -> socketId
+let _io: Server | null = null;
+
+export function getIo(): Server | null {
+  return _io;
+}
 
 export function initSocket(httpServer: HttpServer): void {
   const io = new Server(httpServer, {
@@ -20,6 +25,7 @@ export function initSocket(httpServer: HttpServer): void {
     pingTimeout: 60000,
     pingInterval: 25000,
   });
+  _io = io;
 
   io.use(async (socket, next) => {
     try {
@@ -114,6 +120,13 @@ export function initSocket(httpServer: HttpServer): void {
 
         // Confirm to sender
         socket.emit('message:sent', { message, conversationId: data.conversationId });
+
+        // Trigger bot auto-reply asynchronously
+        import('../services/bot.js').then(({ handleBotReply }) => {
+          handleBotReply(data.conversationId, userId, data.content);
+        }).catch((err) => {
+          logger.error({ err }, 'Failed to load bot reply service');
+        });
 
       } catch (error) {
         logger.error({ error }, 'Message send error');
