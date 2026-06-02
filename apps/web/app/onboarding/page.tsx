@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import {
   INTERESTS, LANGUAGES, PERSONALITY_TRAITS, LIFESTYLE_PREFS
@@ -42,6 +42,7 @@ const STEPS = [
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
+  const queryClient = useQueryClient();
   const [authUser, setAuthUser] = useState<any>(null);
   const [step, setStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
@@ -72,6 +73,8 @@ export default function OnboardingPage() {
       api.post('/api/users/onboard', payload).then(r => r.data),
     onSuccess: () => {
       toast.success('Profile created! Welcome to VOLVERO 💜');
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
       router.push('/discover');
     },
     onError: () => toast.error('Failed to save profile. Please try again.'),
