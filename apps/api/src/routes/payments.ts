@@ -37,9 +37,9 @@ router.post('/create-coin-checkout', requireAuth, async (req: AuthRequest, res) 
     const pkg = COIN_PACKAGES[coins as keyof typeof COIN_PACKAGES];
     const sub = await prisma.subscription.findUnique({ where: { userId: req.userId } });
 
-    const session = await getStripe().checkout.sessions.create({
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
-      customer: sub?.stripeCustomerId || undefined,
+      customer: (sub?.stripeCustomerId && !sub.stripeCustomerId.startsWith('cust_dummy_')) ? sub.stripeCustomerId : undefined,
       line_items: [
         {
           price_data: {
@@ -61,11 +61,28 @@ router.post('/create-coin-checkout', requireAuth, async (req: AuthRequest, res) 
         type: 'COIN_PURCHASE',
         coins: coins.toString(),
       },
-    });
+    };
+
+    let session;
+    try {
+      session = await getStripe().checkout.sessions.create(sessionConfig);
+    } catch (err: any) {
+      if (err.message?.includes('No such customer') && sessionConfig.customer) {
+        console.warn(`Customer ${sessionConfig.customer} not found in Stripe, retrying checkout without customer...`);
+        delete sessionConfig.customer;
+        session = await getStripe().checkout.sessions.create(sessionConfig);
+      } else {
+        throw err;
+      }
+    }
 
     res.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create checkout session' });
+  } catch (error: any) {
+    console.error('Stripe coin checkout session creation failed:', error);
+    res.status(500).json({ 
+      error: 'Failed to create coin checkout session', 
+      details: error.message || String(error)
+    });
   }
 });
 
@@ -88,7 +105,7 @@ router.post('/create-subscription-checkout', requireAuth, async (req: AuthReques
     // For test mode, if priceId doesn't exist, we will use a dummy price via price_data
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
-      customer: sub?.stripeCustomerId || undefined,
+      customer: (sub?.stripeCustomerId && !sub.stripeCustomerId.startsWith('cust_dummy_')) ? sub.stripeCustomerId : undefined,
       mode: 'subscription',
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile?success=true&plan=${planId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/#pricing`,
@@ -119,7 +136,18 @@ router.post('/create-subscription-checkout', requireAuth, async (req: AuthReques
       sessionConfig.line_items = [{ price: priceId, quantity: 1 }];
     }
 
-    const session = await getStripe().checkout.sessions.create(sessionConfig);
+    let session;
+    try {
+      session = await getStripe().checkout.sessions.create(sessionConfig);
+    } catch (err: any) {
+      if (err.message?.includes('No such customer') && sessionConfig.customer) {
+        console.warn(`Customer ${sessionConfig.customer} not found in Stripe, retrying checkout without customer...`);
+        delete sessionConfig.customer;
+        session = await getStripe().checkout.sessions.create(sessionConfig);
+      } else {
+        throw err;
+      }
+    }
 
     res.json({ sessionId: session.id, url: session.url });
   } catch (error: any) {

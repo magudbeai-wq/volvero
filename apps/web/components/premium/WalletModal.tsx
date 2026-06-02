@@ -36,11 +36,20 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     const toastId = toast.loading('Initiating purchase...');
     try {
       const res = await api.post('/api/payments/create-coin-checkout', { packageId });
-      const { sessionId } = res.data;
+      const { sessionId, url } = res.data;
+      
+      if (url) {
+        toast.dismiss(toastId);
+        window.location.href = url;
+        return;
+      }
       
       const stripe = await stripePromise;
-      if (stripe) {
+      if (stripe && sessionId) {
+        toast.dismiss(toastId);
         await stripe.redirectToCheckout({ sessionId });
+      } else {
+        throw new Error('Stripe failed to load');
       }
     } catch (error) {
       toast.error('Failed to initiate checkout. Please try again.', { id: toastId });

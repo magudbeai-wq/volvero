@@ -148,19 +148,51 @@ router.post('/checkout', requireAuth, async (req: AuthRequest, res) => {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium/success`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium`,
-      metadata: { userId: user.id },
-      allow_promotion_codes: true,
-      subscription_data: {
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium/success`,
+        cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium`,
         metadata: { userId: user.id },
-      },
-    });
+        allow_promotion_codes: true,
+        subscription_data: {
+          metadata: { userId: user.id },
+        },
+      });
+    } catch (err: any) {
+      if (err.message?.includes('No such customer')) {
+        logger.warn(`Stripe customer ${customerId} not found. Re-creating customer...`);
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.fullName,
+          metadata: { userId: user.id, supabaseId: user.supabaseId },
+        });
+        customerId = customer.id;
+        await prisma.subscription.update({
+          where: { userId: user.id },
+          data: { stripeCustomerId: customerId },
+        });
+        session = await stripe.checkout.sessions.create({
+          customer: customerId,
+          mode: 'subscription',
+          payment_method_types: ['card'],
+          line_items: [{ price: priceId, quantity: 1 }],
+          success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium/success`,
+          cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/premium`,
+          metadata: { userId: user.id },
+          allow_promotion_codes: true,
+          subscription_data: {
+            metadata: { userId: user.id },
+          },
+        });
+      } else {
+        throw err;
+      }
+    }
 
     res.json({ url: session.url, sessionId: session.id });
   } catch (error) {
@@ -180,10 +212,37 @@ router.post('/portal', requireAuth, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'No subscription found' });
     }
 
-    const session = await stripe.billingPortal.sessions.create({
-      customer: subscription.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
-    });
+    let customerId = subscription.stripeCustomerId;
+    let session;
+    try {
+      session = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+      });
+    } catch (err: any) {
+      if (err.message?.includes('No such customer')) {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        logger.warn(`Stripe customer ${customerId} not found for portal. Re-creating...`);
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.fullName,
+          metadata: { userId: user.id, supabaseId: user.supabaseId },
+        });
+        customerId = customer.id;
+        await prisma.subscription.update({
+          where: { userId: user.id },
+          data: { stripeCustomerId: customerId },
+        });
+        session = await stripe.billingPortal.sessions.create({
+          customer: customerId,
+          return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+        });
+      } else {
+        throw err;
+      }
+    }
 
     res.json({ url: session.url });
   } catch (error) {

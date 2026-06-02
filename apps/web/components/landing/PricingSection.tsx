@@ -105,7 +105,13 @@ export default function PricingSection() {
 
       const toastId = toast.loading('Initiating secure checkout...');
       const res = await api.post('/api/payments/create-subscription-checkout', { planId });
-      const { sessionId } = res.data;
+      const { sessionId, url } = res.data;
+      
+      if (url) {
+        toast.dismiss(toastId);
+        window.location.href = url;
+        return;
+      }
       
       const stripe = await stripePromise;
       if (stripe && sessionId) {
